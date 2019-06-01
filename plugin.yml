@@ -1,0 +1,19 @@
+name: TheCodeCore
+main: EversoftTeam\Main
+author: EversoftTeam
+version: 1.0 beta
+api: 3.0.0
+
+commands:
+  setrank:
+    description: "RankSet"
+  mod:
+    description: "KickJUgadir"
+  hub:
+    description: "Hub-Command"
+  lobby:
+    description: "Lobby-Command"
+  edit:
+    description: "Edit"
+  shop:
+    description: "Edit-SHOP"
