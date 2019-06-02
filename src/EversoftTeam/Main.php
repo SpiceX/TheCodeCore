@@ -1,52 +1,58 @@
 <?php
 
 namespace EversoftTeam;
+
+use EversoftTeam\Commands\GadgetsCommand;
+use EversoftTeam\Commands\HubCommand;
+use EversoftTeam\Commands\ParticlesCommand;
+use EversoftTeam\Commands\RanksCommand;
+use EversoftTeam\Commands\StatsCommand;
+use EversoftTeam\Commands\TopsCommand;
+use EversoftTeam\Form\MenuForm;
+use EversoftTeam\Morphs\SpiderM;
+use EversoftTeam\Morphs\util\Morph;
+use EversoftTeam\Morphs\WitchM;
+use EversoftTeam\Particula\Helix;
+use EversoftTeam\Pet\Armor;
+use EversoftTeam\Pet\MePet;
+use EversoftTeam\Pet\Stand;
+use EversoftTeam\Pet\util\Pet;
+use EversoftTeam\shop\{ShopEntity, ShopEntity1, ShopEntity2, ShopEntity3, ShopUpdate};
 use EversoftTeam\SQLConnection\DatabaseConnection;
+use EversoftTeam\SQLConnection\DatabaseEventHandler;
+use EversoftTeam\SQLConnection\DataExtractor;
+use EversoftTeam\utils\API;
 use EversoftTeam\Utils\CoreUtils;
 use EversoftTeam\utils\PlayerFaceAPI;
 use pocketmine\entity\Effect;
 use pocketmine\entity\EffectInstance;
-use pocketmine\network\mcpe\protocol\PlaySoundPacket;
-use pocketmine\plugin\PluginBase;
-use pocketmine\scheduler\Task;
-use pocketmine\event\Listener;
-use pocketmine\utils\Config;
-use pocketmine\Player;
-use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\event\player\PlayerMoveEvent;
-use pocketmine\item\Item;
-use pocketmine\command\Command;
-use pocketmine\command\CommandSender;
+use pocketmine\entity\Entity;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
-use pocketmine\math\Vector3;
-use pocketmine\Server;
-use pocketmine\event\player\PlayerItemHeldEvent;
-use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\player\PlayerChatEvent;
-use pocketmine\level\Level;
-use EversoftTeam\utils\API;
-use EversoftTeam\Form\MenuForm;
 use pocketmine\event\entity\EntityLevelChangeEvent;
-use EversoftTeam\Pet\Armor;
-use EversoftTeam\Pet\MePet;
-use EversoftTeam\Pet\util\Pet;
-use pocketmine\entity\Entity;
-use EversoftTeam\Particula\Helix;
-use EversoftTeam\Pet\Stand;
-use EversoftTeam\Morphs\SpiderM;
-use EversoftTeam\Morphs\WitchM;
-use EversoftTeam\Morphs\util\Morph;
+use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerDropItemEvent;
-use EversoftTeam\shop\{ShopEntity,ShopUpdate,ShopEntity2,ShopEntity3,ShopEntity1};
+use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\player\PlayerMoveEvent;
+use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\item\Item;
+use pocketmine\level\Level;
+use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\PlaySoundPacket;
+use pocketmine\Player;
+use pocketmine\plugin\PluginBase;
+use pocketmine\scheduler\Task;
+use pocketmine\Server;
+use pocketmine\utils\Config;
 
 class Main extends PluginBase implements Listener
 {
 
-    public $prefix = "§4§k||§r§f§l{TheCod§4ê§f}§r§4§k||§r" ;
+    public $prefix = "§4§k||§r§f§l{TheCod§4ê§f}§r§4§k||§r";
     public $error = "§7[§cERROR§7]§4 ";
     public $titan = "§7[§l§9HELPER§r§7]§r§7";
     public $dragon = "§7[§r§d§lObsidiana§r§7]§r§7";
@@ -63,7 +69,7 @@ class Main extends PluginBase implements Listener
     public $games = ["x" => 41, "y" => 20, "z" => 155];
     public $id = 44444;
     public $edit = "off";
-    public $autenticando = array();
+    public $autenticando = [];
 
     public function addBoss(Player $player)
     {
@@ -74,26 +80,22 @@ class Main extends PluginBase implements Listener
     {
         foreach ($this->getServer()->getOnlinePlayers() as $player) {
             API::setTitle($this->Text($player), $this->id, [$player]);
-            $vida = 100;
-            API::setPercentage($vida, $this->id);
+            API::setPercentage(100, $this->id);
 
         }
     }
 
-    public function Text(Player $player)
+    public function Text()
     {
         $c = array("§a", "§d", "§0", "§9", "§5", "§4", "§3");
         $tx = $c[array_rand($c)] . "        §f§l{TheCod§4ê§f}§r" . " §1| " . $c[array_rand($c)] . " BETA";
-        $st = count($this->getServer()->getOnlinePlayers()) . " §9| §7Coins §b: §a" . $this->colorCoins($player);
+        $st = count($this->getServer()->getOnlinePlayers()) . " §9| §7Coins §b: §a";
         return $tx . "\n\n" . "§7Players Online §b: §a" . $st;
     }
 
     public function removeBossToPlayer(Player $player)
     {
-
         API::removeBossBar([$player], $this->id);
-
-
     }
 
     public function addMorphs(Player $player, $type)
@@ -106,9 +108,10 @@ class Main extends PluginBase implements Listener
             $par->save();
             foreach ($this->getServer()->getLevels() as $level) {
                 foreach ($level->getEntities() as $entity) {
-                    if ($entity->getTargetEntity() == $player) {
-                        $entity->close();
-
+                    if ($entity instanceof Player) {
+                        if ($entity->getTargetEntity() == $player) {
+                            $entity->close();
+                        }
                     }
                 }
             }
@@ -288,57 +291,6 @@ class Main extends PluginBase implements Listener
 
 //ACCIONES COINS
 
-    public function getCoins(PLayer $player)
-    {
-        $coin = new Config($this->getDataFolder() . "coins.yml", Config::YAML);
-        return $coin->get($player->getName());
-    }
-
-    public function setCoins(Player $player, $cantidad)
-    {
-        $coin = new Config($this->getDataFolder() . "coins.yml", Config::YAML);
-        $cos = $coin->get($player->getName());
-        $key = $cos + $cantidad;
-        $coin->set($player->getName(), $key);
-        $coin->save();
-    }
-
-    public function unsetCoins(Player $player, $cantidad)
-    {
-        $coin = new Config($this->getDataFolder() . "coins.yml", Config::YAML);
-        $cos = $coin->get($player->getName());
-        $key = $cos - $cantidad;
-        $coin->set($player->getName(), $key);
-        $coin->save();
-    }
-
-    public function setDefaultCoins(PLayer $player)
-    {
-        $coin = new Config($this->getDataFolder() . "coins.yml", Config::YAML);
-        if ($coin->get($player->getName()) == null) {
-            $coin->set($player->getName(), 0);
-            $coin->save();
-        }
-
-
-    }
-
-    public function colorCoins(Player $player)
-    {
-        $coin = new Config($this->getDataFolder() . "coins.yml", Config::YAML);
-        $p = $coin->get($player->getName());
-        $t = null;
-        if ($p >= 1) {
-            $t = "§a+" . $this->getCoins($player);
-        }
-        if ($p < 0) {
-            $t = "§c" . $this->getCoins($player);
-        }
-        if ($p == 0) {
-            $t = "§e" . $this->getCoins($player);
-        }
-        return $t;
-    }
 
 
     public function onDisable()
@@ -349,12 +301,18 @@ class Main extends PluginBase implements Listener
     public function onEnable()
     {
         new SQLConnection\DatabaseConnection($this);
-        @mkdir($this->getDataFolder() . "playerheads");
         $world = $this->getServer()->getDefaultLevel();
         $world->setTime(0);
         $world->stopTime();
+        $this->getServer()->getCommandMap()->register('gadgets', new GadgetsCommand($this), "Gadgets");
+        $this->getServer()->getCommandMap()->register('lobby', new HubCommand($this), "Lobby");
+        $this->getServer()->getCommandMap()->register('gadgets', new ParticlesCommand($this), "Particles");
+        $this->getServer()->getCommandMap()->register('stats', new StatsCommand($this), "Statistics");
+        $this->getServer()->getCommandMap()->register("topkills", new TopsCommand($this), "Top Kills");
+        $this->getServer()->getCommandMap()->register("rank", new RanksCommand($this), "Ranks");
         $this->getLogger()->info("TheCodeCore enabled");
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
+        $this->getServer()->getPluginManager()->registerEvents(new DatabaseEventHandler($this), $this);
         Entity::registerEntity(Armor::class, true);
         Entity::registerEntity(SpiderM::class, true);
         Entity::registerEntity(MePet::class, true);
@@ -373,14 +331,12 @@ class Main extends PluginBase implements Listener
         $configs->save();
         $configsa = new Config($this->getDataFolder() . "/mor.yml", Config::YAML);
         $configsa->save();
-        $configsaa = new Config($this->getDataFolder() . "/coins.yml", Config::YAML);
-        $configsaa->save();
         $configsaa = new Config($this->getDataFolder() . "/shop.yml", Config::YAML, [
             'shop1' => 0,
             'shop2' => 0,
             'shop3' => 0,
             'shop4' => 0,
-            'level' => 'lob',
+            'level' => $this->getServer()->getDefaultLevel()->getName(),
 
         ]);
         $configsaa->save();
@@ -531,35 +487,13 @@ class Main extends PluginBase implements Listener
         }
         if ($evento->getEntity() instanceof ShopEntity) {
             $evento->setCancelled(true);
-            $coins = new Config($this->getDataFolder() . "coins.yml", Config::YAML);
             $shop = new Config($this->getDataFolder() . "shop.yml", Config::YAML);
             if ($evento instanceof EntityDamageByEntityEvent) {
                 $pl = $evento->getDamager();
                 if ($pl instanceof Player) {
                     $pla = $shop->get($pl->getName());
-                    $c = $coins->get($pl->getName());
                     if ($pla['cosmetic1'] == "unlocket") {
                         $pl->sendMessage("§7[§6SHOP§7] §aYa tienes comprado esto!");
-                    }
-                    if ($pla['cosmetic1'] == "locket") {
-                        if ($c < 20000) {
-                            $pl->sendMessage("§7[§6SHOP§7] §cNo tienes suficientes coins!");
-                        }
-                        if ($c >= 20000) {
-                            $this->unsetCoins($pl, 20000);
-                            $pl->sendMessage("§l§a✔7[§l§a✔6SHOP§l§a✔7] §l§a✔Felicidades has obtenido §b: §7KIT FFA FULL!");
-                            $c1 = 'unlocket';
-                            $c2 = $pla['cosmetic2'];
-                            $c3 = $pla['cosmetic3'];
-                            $c4 = $pla['cosmetic4'];
-                            $shop->set($pl->getName(), [
-                                'cosmetic1' => $c1,
-                                'cosmetic2' => $c2,
-                                'cosmetic3' => $c3,
-                                'cosmetic4' => $c4,
-                            ]);
-                            $shop->save();
-                        }
                     }
                 }
             }
@@ -567,36 +501,13 @@ class Main extends PluginBase implements Listener
         }
         if ($evento->getEntity() instanceof ShopEntity1) {
             $evento->setCancelled(true);
-
-            $coins = new Config($this->getDataFolder() . "coins.yml", Config::YAML);
             $shop = new Config($this->getDataFolder() . "shop.yml", Config::YAML);
 
             $pl = $evento->getDamager();
             if ($pl instanceof Player) {
                 $pla = $shop->get($pl->getName());
-                $c = $coins->get($pl->getName());
                 if ($pla['cosmetic2'] == "unlocket") {
                     $pl->sendMessage("§7[§6SHOP§7] §aYa tienes comprado esto!");
-                }
-                if ($pla['cosmetic2'] == "locket") {
-                    if ($c < 80000) {
-                        $pl->sendMessage("§7[§6SHOP§7] §cNo tienes suficientes coins!");
-                    }
-                    if ($c >= 80000) {
-                        $this->unsetCoins($pl, 80000);
-                        $pl->sendMessage("§l§a✔7[§l§a✔6SHOP§l§a✔7] §l§a✔Felicidades has obtenido §b: §7Pack Pet Basic");
-                        $c1 = $pla['cosmetic1'];
-                        $c2 = 'unlocket';
-                        $c3 = $pla['cosmetic3'];
-                        $c4 = $pla['cosmetic4'];
-                        $shop->set($pl->getName(), [
-                            'cosmetic1' => $c1,
-                            'cosmetic2' => $c2,
-                            'cosmetic3' => $c3,
-                            'cosmetic4' => $c4,
-                        ]);
-                        $shop->save();
-                    }
                 }
             }
 
@@ -604,35 +515,13 @@ class Main extends PluginBase implements Listener
         }
         if ($evento->getEntity() instanceof ShopEntity2) {
             $evento->setCancelled(true);
-            $coins = new Config($this->getDataFolder() . "coins.yml", Config::YAML);
             $shop = new Config($this->getDataFolder() . "shop.yml", Config::YAML);
 
             $pl = $evento->getDamager();
             if ($pl instanceof Player) {
                 $pla = $shop->get($pl->getName());
-                $c = $coins->get($pl->getName());
                 if ($pla['cosmetic3'] == "unlocket") {
                     $pl->sendMessage("§7[§6SHOP§7] §aYa tienes comprado esto!");
-                }
-                if ($pla['cosmetic3'] == "locket") {
-                    if ($c < 100000) {
-                        $pl->sendMessage("§7[§6SHOP§7] §cNo tienes suficientes coins!");
-                    }
-                    if ($c >= 100000) {
-                        $this->unsetCoins($pl, 100000);
-                        $pl->sendMessage("§l§a✔7[§l§a✔6SHOP§l§a✔7] §l§a✔Felicidades has obtenido §b: §7Pack Gadgets Basic");
-                        $c1 = $pla['cosmetic1'];
-                        $c2 = $pla['cosmetic2'];
-                        $c3 = 'unlocket';
-                        $c4 = $pla['cosmetic4'];
-                        $shop->set($pl->getName(), [
-                            'cosmetic1' => $c1,
-                            'cosmetic2' => $c2,
-                            'cosmetic3' => $c3,
-                            'cosmetic4' => $c4,
-                        ]);
-                        $shop->save();
-                    }
                 }
             }
 
@@ -640,35 +529,12 @@ class Main extends PluginBase implements Listener
         }
         if ($evento->getEntity() instanceof ShopEntity3) {
             $evento->setCancelled(true);
-
-            $coins = new Config($this->getDataFolder() . "coins.yml", Config::YAML);
             $shop = new Config($this->getDataFolder() . "shop.yml", Config::YAML);
             $pl = $evento->getDamager();
             if ($pl instanceof Player) {
                 $pla = $shop->get($pl->getName());
-                $c = $coins->get($pl->getName());
                 if ($pla['cosmetic4'] == "unlocket") {
                     $pl->sendMessage("§7[§6SHOP§7] §aYa tienes comprado esto!");
-                }
-                if ($pla['cosmetic4'] == "locket") {
-                    if ($c < 50000) {
-                        $pl->sendMessage("§7[§6SHOP§7] §cNo tienes suficientes coins!");
-                    }
-                    if ($c >= 50000) {
-                        $this->unsetCoins($pl, 50000);
-                        $pl->sendMessage("§l§a✔7[§l§a✔6SHOP§l§a✔7] §l§a✔Felicidades has obtenido §b: §7Rank Enginner");
-                        $c1 = $pla['cosmetic1'];
-                        $c2 = $pla['cosmetic2'];
-                        $c3 = $pla['cosmetic3'];
-                        $c4 = 'unlocket';
-                        $shop->set($pl->getName(), [
-                            'cosmetic1' => $c1,
-                            'cosmetic2' => $c2,
-                            'cosmetic3' => $c3,
-                            'cosmetic4' => $c4,
-                        ]);
-                        $shop->save();
-                    }
                 }
             }
         }
@@ -817,10 +683,9 @@ class Main extends PluginBase implements Listener
                 $p->save();
             }
             $this->setDefaultShop($player);
-            $this->setDefaultCoins($player);
             $player->removeAllEffects();
             $event->setJoinMessage("");
-            $player->sendMessage("§bBienvenido a §f{TheCod§4ê§f}§7 §6BETA\n§6Recuerda que todo lo que ves es BETA\n§7Si encuentras algún bug u error puedes reportarlo vía Twitter\nDiscord o bien con un Admin u Owner.");
+            $player->sendMessage(CoreUtils::AUTHENTICATE_MESSAGE);
 
             $r = $rank->get($player->getName());
 
@@ -889,7 +754,7 @@ class Main extends PluginBase implements Listener
         $rank = "User";
         $money = 0;
         $kills = 0;
-        $deaths = 0;
+        $deaths = 1;
         $idn = 0;
         $uuid = $player->getUniqueId()->toString();
         if ($this->verifyUserInDB($name) == 0) {
@@ -904,13 +769,15 @@ class Main extends PluginBase implements Listener
                     $this->Menu($player);
                     $player->sendMessage(CoreUtils::AUTH_SUCESS);
                     $player->removeAllEffects();
+                    $player->sendMessage($this->prefix . "§aObteniendo datos del jugador...");
+                    $player->sendMessage($this->prefix . "§cPor favor espere...");
+                    $player->sendMessage($this->prefix . "§aDatos obtenidos con exito!");
                     $getFace = new PlayerFaceAPI($this);
                     $getFace->sendHead($name, $player->getSkin()->getSkinData());
                     $sqli = DatabaseConnection::$connection;
                     $query = "INSERT INTO ServerAccounts (ID,NAME,PASSWORD,RANK,MONEY,KILLS,DEATHS,UUID) VALUES (?,?,?,?,?,?,?,?)";
                     if ($stmt = $sqli->prepare($query)) {
-                        $id = $idn++;
-                        $stmt->bind_param("isssiiis", $id, $name, $password, $rank, $money, $kills, $deaths, $uuid);
+                        $stmt->bind_param("isssiiis", $idn, $name, $password, $rank, $money, $kills, $deaths, $uuid);
                         $stmt->execute();
                     }
                 } else {
@@ -921,6 +788,7 @@ class Main extends PluginBase implements Listener
             }
         }
     }
+
 
     public function addTitleOnJoin(PlayerJoinEvent $joinEvent)
     {
@@ -935,19 +803,29 @@ class Main extends PluginBase implements Listener
      * @param string $name
      * @return int
      */
-    private function verifyUserInDB(string $name)
+    public function verifyUserInDB(string $name)
     {
         $conn = DatabaseConnection::$connection;
-        $result = mysqli_query($conn, "SELECT EXISTS(SELECT * FROM ServerAccounts WHERE NAME= 'LPDroidPE')");
-        $check = mysqli_fetch_array($result);
-        return $check[0];
+        $query = mysqli_query($conn, "SELECT * FROM ServerAccounts WHERE NAME='" . $name . "'");
+        if (!$query) {
+            die('Error: ' . mysqli_error($conn));
+        }
+        if (mysqli_num_rows($query) > 0) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
 
     /*Seccion de players function*/
 
 
-    public function lobby(Player $player)
+    /**
+     * @param Player $player
+     * @return bool
+     */
+    public function lobby(Player $player) : bool
     {
         if ($player->getLevel()->getFolderName() == Server::getInstance()->getDefaultLevel()->getName()) {
             $this->getServer()->loadLevel(Server::getInstance()->getDefaultLevel()->getName());
@@ -955,265 +833,18 @@ class Main extends PluginBase implements Listener
             $this->Menu($player);
             return true;
         }
+        return true;
     }
 
 
-    /*Commands*/
-
-    public function onCommand(CommandSender $player, Command $cmd, $label, array $args): bool
-    {
-        if ($player instanceof Player) {
-            switch ($cmd->getName()) {
-                case "setrank":
-                    if ($player->isOp()) {
-                        if (!empty($args[0])) {
-                            if (!empty($args[1])) {
-                                $rank = new Config($this->getDataFolder() . "/rank.yml", Config::YAML);
-                                if ($args[0] == "helper") {
-                                    $r = $this->titan;
-                                } elseif ($args[0] == "obsidiana") {
-                                    $r = $this->dragon;
-                                } elseif ($args[0] == "diamond") {
-                                    $r = $this->master;
-                                } elseif ($args[0] == "hierro") {
-                                    $r = $this->king;
-                                } elseif ($args[0] == "miniyt") {
-                                    $r = $this->miniyt;
-                                } elseif ($args[0] == "yt") {
-                                    $r = $this->yt;
-                                } elseif ($args[0] == "yt+") {
-                                    $r = $this->ytmas;
-                                } elseif ($args[0] == "owner") {
-                                    $r = $this->cr;
-                                } elseif ($args[0] == "admin") {
-                                    $r = $this->admin;
-                                } elseif ($args[0] == "mod") {
-                                    $r = $this->fbi;
-                                } else {
-                                    goto fin;
-                                }
-                                $jug = $this->getServer()->getPlayer($args[1]);
-                                if ($jug != null) {
-                                    $rank->set($jug->getName(), $r);
-                                    $rank->save();
-
-                                    $player->sendMessage($this->prefix . "§a " . $jug->getName() . "§e obtubo el rango:§c " . $r);
-                                } else {
-                                    $rank->set($args[1], $r);
-                                    $rank->save();
-                                    $player->sendMessage($this->prefix . " Dado rango" . $r);
-                                }
-                                fin:
-                            } else {
-                                $player->sendMessage($this->error . "uso: /setrank [rank] [player]");
-                            }
-                        } else {
-                            $player->sendMessage($this->error . " Este rango no existe");
-                        }
-
-                    } else {
-                        $player->sendMessage($this->error . "Usted no puede ejecutar este comando");
-                    }
-                    return true;
-                case "mod":
-
-                    if (!empty($args[0])) {
-
-                        $rank = new Config($this->getDataFolder() . "/rank.yml", Config::YAML);
-
-                        if ($args[0] == "kick") {
-                            if (!empty($args[1])) {
-                                $jug = $this->getServer()->getPlayer($args[1]);
-                                if ($player->isOp() or $rank->get($player->getName()) == $this->titan or $rank->get($player->getName()) == $this->fbi) {
-                                    $player->sendMessage("§aModTools > Kick exitoso");
-                                    $jug->kick("§l§4Has sido sacado por §eincumplimiento  ", false);
-
-                                }
-                            }
-                        }
-                        if ($args[0] == "gm1") {
-
-                            if ($player->isOp() or $rank->get($player->getName()) == $this->titan or $rank->get($player->getName()) == $this->fbi) {
-
-                                $player->sendMessage("§aModTools > Challange Gamemode 1");
-                                $player->setGamemode(1);
-
-                            }
-                        }
-                        if ($args[0] == "gm3") {
-
-                            if ($player->isOp() or $rank->get($player->getName()) == $this->titan or $rank->get($player->getName()) == $this->fbi) {
-
-                                $player->sendMessage("§aModTools > Challange Gamemode 3");
-                                $player->setGamemode(3);
-
-                            }
-                        }
-                        if ($args[0] == "gm0") {
-
-                            if ($player->isOp() or $rank->get($player->getName()) == $this->titan or $rank->get($player->getName()) == $this->fbi) {
-
-                                $player->sendMessage("§ModTools > Challange Gamemode 0");
-                                $player->setGamemode(0);
-
-                            }
-                        }
-
-                        if ($args[0] == "help") {
-
-                            if ($player->isOp() or $rank->get($player->getName()) == $this->titan or $rank->get($player->getName()) == $this->fbi) {
-
-                                $player->sendMessage("§dMod Tools §bTheCODE");
-                                $player->sendMessage("§a/mod kick [player]");
-                                $player->sendMessage("§a/mod gm1");
-                                $player->sendMessage("§a/mod gm3");
-                                $player->sendMessage("§a/mod gm0");
-
-
-                            }
-                        }
-
-
-                    }
-
-                    return true;
-                case "hub":
-                    $this->lobby($player);
-                    foreach ($this->getServer()->getLevels() as $lvls) {
-                        foreach ($lvls->getEntities() as $e) {
-                            if ($e->getTargetEntity() == $player) {
-                                $e->close();
-                                $player->removeAllEffects();
-                            }
-                        }
-                    }
-
-                    return true;
-                case "lobby":
-                    $this->lobby($player);
-                    foreach ($this->getServer()->getLevels() as $lvls) {
-                        foreach ($lvls->getEntities() as $e) {
-                            if ($e->getTargetEntity() == $player) {
-                                $e->close();
-                                $player->removeAllEffects();
-                            }
-                        }
-                    }
-                    return true;
-                case "edit":
-                    if ($player->isOp()) {
-                        if (!empty($args[0])) {
-
-                            if ($args[0] == "on") {
-                                $this->edit = "on";
-                                $player->sendMessage("Modo Edit enble id : " . mt_rand(1, 500));
-                            }
-                            if ($args[0] == "off") {
-                                $this->edit = "off";
-                                $player->sendMessage("Modo Edit Disable ");
-                            }
-
-                        }
-                    }
-                    return true;
-                case 'shop':
-                    if ($player->isOp()) {
-
-                        if (!empty($args[0])) {
-                            if ($args[0] == 'fixed') {
-                                foreach ($this->getServer()->getLevels() as $level) {
-                                    foreach ($level->getEntities() as $entity) {
-                                        if ($entity instanceof ShopEntity) {
-                                            $entity->setRotation($player->yaw, 0);
-                                        }
-                                    }
-                                }
-                                foreach ($this->getServer()->getLevels() as $level) {
-                                    foreach ($level->getEntities() as $entity) {
-                                        if ($entity instanceof ShopEntity1) {
-                                            $entity->setRotation($player->yaw, 0);
-                                        }
-                                    }
-                                }
-                                foreach ($this->getServer()->getLevels() as $level) {
-                                    foreach ($level->getEntities() as $entity) {
-                                        if ($entity instanceof ShopEntity2) {
-                                            $entity->setRotation($player->yaw, 0);
-                                        }
-                                    }
-                                }
-                                foreach ($this->getServer()->getLevels() as $level) {
-                                    foreach ($level->getEntities() as $entity) {
-                                        if ($entity instanceof ShopEntity3) {
-                                            $entity->setRotation($player->yaw, 0);
-                                        }
-                                    }
-                                }
-                            }
-                            if ($args[0] == "1") {
-                                $shop = new Config($this->getDataFolder() . "shop.yml", Config::YAML);
-                                $x = $player->getX();
-                                $y = $player->getY();
-                                $z = $player->getZ();
-                                if ($shop->get("shop1") == 0) {
-                                    $shop->set("shop1", [$x, $y, $z]);
-                                    $shop->save();
-                                    $player->sendMessage("Shop1 Guardada");
-                                }
-                            }
-                            if ($args[0] == "2") {
-                                $shop = new Config($this->getDataFolder() . "shop.yml", Config::YAML);
-                                $x = $player->getX();
-                                $y = $player->getY();
-                                $z = $player->getZ();
-                                if ($shop->get("shop2") == 0) {
-                                    $shop->set("shop2", [$x, $y, $z]);
-                                    $shop->save();
-                                    $player->sendMessage("Shop2 Guardada");
-                                }
-                            }
-                            if ($args[0] == "3") {
-                                $shop = new Config($this->getDataFolder() . "shop.yml", Config::YAML);
-                                $x = $player->getX();
-                                $y = $player->getY();
-                                $z = $player->getZ();
-                                if ($shop->get("shop3") == 0) {
-                                    $shop->set("shop3", [$x, $y, $z]);
-                                    $shop->save();
-                                    $player->sendMessage("Shop3 Guardada");
-                                }
-                            }
-                            if ($args[0] == "4") {
-                                $shop = new Config($this->getDataFolder() . "shop.yml", Config::YAML);
-                                $x = $player->getX();
-                                $y = $player->getY();
-                                $z = $player->getZ();
-                                if ($shop->get("shop4") == 0) {
-                                    $shop->set("shop4", [$x, $y, $z]);
-                                    $shop->save();
-                                    $player->sendMessage("Shop4 Guardada");
-                                }
-
-                            }
-
-                        }
-
-
-                    }
-
-                    return true;
-
-            }
-        }
-    }
 
     public function onBreak(BlockBreakEvent $event)
     {
-        if ($event->getPlayer()->getLevel()->getFolderName() == "lob") {
+        if ($event->getPlayer()->getLevel()->getFolderName() == Server::getInstance()->getDefaultLevel()->getName()) {
 
             $event->setCancelled();
         }
-        if ($event->getPlayer()->getLevel()->getFolderName() == "lob") {
+        if ($event->getPlayer()->getLevel()->getFolderName() == Server::getInstance()->getDefaultLevel()->getName()) {
 
             if ($this->edit == "on") {
                 if ($event->getPlayer()->isOp()) {
@@ -1232,11 +863,11 @@ class Main extends PluginBase implements Listener
 
     public function onPlace(BlockPlaceEvent $event)
     {
-        if ($event->getPlayer()->getLevel()->getFolderName() == "lob") {
+        if ($event->getPlayer()->getLevel()->getFolderName() == Server::getInstance()->getDefaultLevel()->getName()) {
 
             $event->setCancelled();
         }
-        if ($event->getPlayer()->getLevel()->getFolderName() == "lob") {
+        if ($event->getPlayer()->getLevel()->getFolderName() == Server::getInstance()->getDefaultLevel()->getName()) {
 
             if ($this->edit == "on") {
                 if ($event->getPlayer()->isOp()) {
@@ -1254,22 +885,18 @@ class Main extends PluginBase implements Listener
 
     public function onPvP(EntityDamageEvent $eventPvP)
     {
-        $map = $eventPvP->getEntity()->getLevel()->getFolderName();
-        if ($map == "lob") {
+        $map = $eventPvP->getEntity()->getLevel()->getName();
+        if ($map == Server::getInstance()->getDefaultLevel()->getName()) {
             if ($eventPvP instanceof EntityDamageByEntityEvent) {
                 if ($eventPvP->getEntity() instanceof Player && $eventPvP->getDamager() instanceof Player) {
-
                     $eventPvP->setCancelled();
-
                 }
             }
         }
         if ($map == Server::getInstance()->getDefaultLevel()->getName()) {
             if ($eventPvP instanceof EntityDamageByEntityEvent) {
                 if ($eventPvP->getEntity() instanceof Player && $eventPvP->getDamager() instanceof Player) {
-
                     $eventPvP->setCancelled();
-
                 }
             }
         }
@@ -1279,35 +906,29 @@ class Main extends PluginBase implements Listener
     {
         $player->getInventory()->clearAll();
         $player->setGamemode(2);
-        $player->getInventory()->setItem(0, Item::get(345, 0, 1));
-
-        $player->getInventory()->setItem(1, Item::get(397, 0, 1));
-
-        $player->getInventory()->setItem(4, Item::get(54, 0, 1));
-
-        $player->getInventory()->setItem(7, Item::get(351, 10, 1));
-
-        $player->getInventory()->setItem(8, Item::get(399, 0, 1));
+        $player->getInventory()->setItem(0, Item::get(Item::COMPASS, 0, 1)->setCustomName("§b§k||§r§6Teleports§b§k||"));
+        $player->getInventory()->setItem(1, Item::get(Item::SKULL, 0, 1)->setCustomName("§b§k||§r§9Pets§b§k||"));
+        $player->getInventory()->setItem(4, Item::get(Item::CHEST, 0, 1)->setCustomName("§b§k||§r§4Games§b§k||"));
+        $player->getInventory()->setItem(7, Item::get(Item::DYE, 10, 1)->setCustomName("§b§k||§r§aParticulas§b§k||"));
+        $player->getInventory()->setItem(8, Item::get(Item::NETHER_STAR, 0, 1)->setCustomName("§b§k||§r§2Miscelaneo§b§k||"));
         return true;
     }
 
     public function onPlayerInteractEvent(PlayerInteractEvent $event)
     {
 
-        if ($event->getPlayer()->getLevel()->getFolderName() == "lob") {
-
+        if ($event->getPlayer()->getLevel()->getName() == Server::getInstance()->getDefaultLevel()->getName()) {
             $i = $event->getItem();
             $player = $event->getPlayer();
-
-            if ($i->getId() == 345) {
+            if ($i->getId() == Item::COMPASS) {
                 $this->GamesTP($player);
-            } elseif ($i->getId() == 397) {
-                $this->clf($player);
-            } elseif ($i->getId() == 54) {
+            } elseif ($i->getId() == Item::SKULL) {
+                $this->sendSoonMessage($player);
+            } elseif ($i->getId() == Item::CHEST) {
                 $this->addMenuCos($player);
-            } elseif ($i->getId() == 351) {
-                $this->info($player);
-            } elseif ($i->getId() == 399) {
+            } elseif ($i->getId() == Item::DYE) {
+                $this->sendSoonMessage($player);
+            } elseif ($i->getId() == Item::NETHER_STAR) {
                 $this->sendPlayerForm($player);
             }
 
@@ -1317,53 +938,8 @@ class Main extends PluginBase implements Listener
 
     }
 
-    public function nombre(PlayerItemHeldEvent $event)
-    {
 
-        if ($event->getPlayer()->getLevel()->getFolderName() == "lob") {
-
-            $i = $event->getItem();
-            $player = $event->getPlayer();
-
-            if ($i->getId() == 345) {
-                $player->sendPopup("§l§6Games");
-            } elseif ($i->getId() == 397) {
-                $player->sendPopup("§l§6#Locket");
-            } elseif ($i->getId() == 54) {
-                $player->sendPopup("§l§6Cosmetics");
-            } elseif ($i->getId() == 351) {
-                $player->sendPopup("§l§6#Locket");
-            } elseif ($i->getId() == 399) {
-                $player->sendPopup("§l§6Servers Aliados");
-            }
-
-
-        }
-
-
-    }
-
-    public function eye(Player $player)
-    {
-        $player->sendMessage($this->prefix . " §7Esto estara muy pronto");
-        return true;
-    }
-
-    public function clf(Player $player)
-    {
-        $player->sendMessage($this->prefix . " §7Esto estara muy pronto");
-        return true;
-    }
-
-    public function games(Player $player)
-    {
-        $player->sendMessage($this->prefix . " §7Esto estara muy pronto");
-
-        return true;
-    }
-
-
-    public function info(Player $player)
+    public function sendSoonMessage(Player $player)
     {
         $player->sendMessage($this->prefix . " §7Esto estara muy pronto");
         return true;
@@ -1372,8 +948,6 @@ class Main extends PluginBase implements Listener
     public function infoadmin(Player $player)
     {
         $this->sendPlayerForm($player);
-
-
     }
 
     public function dataPet(Player $player)
@@ -1417,7 +991,7 @@ class Main extends PluginBase implements Listener
 
     public function addMenuCos(Player $player)
     {
-            $accion = function ($player, $data) {
+        $accion = function ($player, $data) {
             $name = array("§l§eStand Creeper\n§r§5Type§7: §aPet", "§l§eHelix\n§r§5Type§7: §aParticle", "§l§eMini Me\n§r§5Type§7: §aPet", "§l§eSpider\n§r§5Type§7: §aMorph", "§l§eWitch\n§r§5Type§7: §aMorph");
             if ($player instanceof Player) {
                 switch ($name[$data]) {
@@ -1507,304 +1081,203 @@ class Main extends PluginBase implements Listener
     }
 
 
+    public function sendFormMB(): array
+    {
 
+        $datos = array(
 
-   public function sendFormMB():array{
-
- $datos = array(
-
-            "type"    => "form",
-            "title"   => "§l§7Servers Aliados",
+            "type" => "form",
+            "title" => "§l§7Servers Aliados",
             "content" => "",
             "buttons" => array()
 
         );
- for($i = 0; $i<1; $i++){
-    $name = array("§l§cMine§aCreepe§ePE");
-$datos["buttons"][] = array("text" => $name[0]);
- }
+        for ($i = 0; $i < 1; $i++) {
+            $name = array("§l§cMine§aCreepe§ePE");
+            $datos["buttons"][] = array("text" => $name[0]);
+        }
 
 
-return $datos;
-}
+        return $datos;
+    }
 
- public function sendPlayerForm(Player $pl){
+    public function sendPlayerForm(Player $pl)
+    {
+        $accion = function ($pl, $data) {};
+        $pl->sendForm(new MenuForm($this->sendFormMB(), $accion));
+    }
 
-$accion = function($pl,$data){
+    public function sendFormGames()
+    {
+        $datos = array(
 
-};
-
-
-    $pl->sendForm(new MenuForm($this->sendFormMB(),$accion));
- }
-
-public function sendFormGames(){
-
- $datos = array(
-
-            "type"    => "form",
-            "title"   => "§k§6iii§r§9§lTravel§r§k§6iii§r",
+            "type" => "form",
+            "title" => "§k§6iii§r§9§lTravel§r§k§6iii§r",
             "content" => "",
             "buttons" => array()
 
         );
- for($i = 0; $i<5; $i++){
-   $name = array("§k§aiii§r§l§6HungerGames§r§k§aiii§r\n§eBatallas de sobrevivencia","§k§aiii§r§l§6FFA ULTRA§r§k§aiii§r\n§eBatalla vs Todos","§k§aiii§r§l§6SkyWars§r§k§aiii§r\n§eGuerra d elos cielos","§k§aiii§r§l§6LuckyWars§r§k§aiii§r\n§ePrueba tu suerte con el luckyblock","§k§aiii§r§l§6SnowSurvival§r§k§aiii§r\n§eMuy pronto");
-$datos["buttons"][] = array("text" => $name[$i]);
- }
+        for ($i = 0; $i < 5; $i++) {
+            $name = array("§k§aiii§r§l§6SkyWars§r§k§aiii§r\n§eCombate en islas flotantes!", "§k§aiii§r§l§6FFA§r§k§aiii§r\n§eTodos vs Todos!", "§k§aiii§r§l§6TheBridge§r§k§aiii§r\n§eCuantos puntos lograras hacer?", "§k§aiii§r§l§61vs1§r§k§aiii§r\n§eResuelve disputas!", "§k§aiii§r§l§6EggWars§r§k§aiii§r\n§eMuy pronto");
+            $datos["buttons"][] = array("text" => $name[$i]);
+        }
+        return $datos;
+    }
 
 
-return $datos;
+    public function GamesTP(Player $player)
+    {
+        if ($player instanceof Player) {
+            $accion = function ($pl, $data) {
+                if ($data !== null) {
+                    $par = new Config($this->getDataFolder() . "/mor.yml", Config::YAML);
+                    $pet = new Config($this->getDataFolder() . "/pet.yml", Config::YAML);
+                    $name = array("§k§aiii§r§l§6SkyWars§r§k§aiii§r\n§eCombate en islas flotantes!", "§k§aiii§r§l§6FFA§r§k§aiii§r\n§eTodos vs Todos!", "§k§aiii§r§l§6TheBridge§r§k§aiii§r\n§eCuantos puntos lograras hacer?", "§k§aiii§r§l§61vs1§r§k§aiii§r\n§eResuelve disputas!", "§k§aiii§r§l§6EggWars§r§k§aiii§r\n§eMuy pronto");
+                    if ($pl instanceof Player) {
+                        switch ($name[$data]) {
+                            case $name[0]:
+                                $pl->teleport(new Vector3(140, 19, 116));
+                                foreach ($this->getServer()->getLevels() as $level) {
+                                    foreach ($level->getEntities() as $entity) {
+                                        if ($entity->getTargetEntity() == $pl) {
+                                            $entity->close();
+                                            $pl->removeAllEffects();
+                                            if (!$par->get($pl->getName()) == null) {
+                                                if (!$pet->get($pl->getName()) == null) {
+                                                    $par->set($pl->getName(), "ds");
+                                                    $pet->set($pl->getName(), "ds");
+                                                    $par->save();
+                                                    $pet->save();
 
 
-}
-
-
-public function GamesTP(Player $player)
-{
-    if ($player instanceof Player) {
-        $accion = function ($pl, $data) {
-            if ($data !== null) {
-                $par = new Config($this->getDataFolder() . "/mor.yml", Config::YAML);
-                $pet = new Config($this->getDataFolder() . "/pet.yml", Config::YAML);
-                $name = array("§k§aiii§r§l§6HungerGames§r§k§aiii§r\n§eBatallas de sobrevivencia", "§k§aiii§r§l§6FFA ULTRA§r§k§aiii§r\n§eBatalla vs Todos", "§k§aiii§r§l§6SkyWars§r§k§aiii§r\n§eGuerra d elos cielos", "§k§aiii§r§l§6LuckyWars§r§k§aiii§r\n§ePrueba tu suerte con el luckyblock", "§k§aiii§r§l§6SnowSurvival§r§k§aiii§r\n§eMuy pronto");
-                if ($pl instanceof Player) {
-                    switch ($name[$data]) {
-                        case $name[0]:
-                            $pl->teleport(new Vector3(140, 19, 116));
-                            foreach ($this->getServer()->getLevels() as $level) {
-                                foreach ($level->getEntities() as $entity) {
-                                    if ($entity->getTargetEntity() == $pl) {
-                                        $entity->close();
-                                        $pl->removeAllEffects();
-                                        if (!$par->get($pl->getName()) == null) {
-                                            if (!$pet->get($pl->getName()) == null) {
-                                                $par->set($pl->getName(), "ds");
-                                                $pet->set($pl->getName(), "ds");
-                                                $par->save();
-                                                $pet->save();
-
-
-                                            }
-
-
-                                        }
-
-                                    }
-                                }
-                            }
-                            break;
-                        case $name[1]:
-                            $pl->teleport(new Vector3(142, 19, 122));
-                            foreach ($this->getServer()->getLevels() as $level) {
-                                foreach ($level->getEntities() as $entity) {
-                                    if ($entity->getTargetEntity() == $pl) {
-                                        $entity->close();
-                                        $pl->removeAllEffects();
-                                        if (!$par->get($pl->getName()) == null) {
-                                            if (!$pet->get($pl->getName()) == null) {
-                                                $par->set($pl->getName(), "ds");
-                                                $pet->set($pl->getName(), "ds");
-                                                $par->save();
-                                                $pet->save();
+                                                }
 
 
                                             }
 
+                                        }
+                                    }
+                                }
+                                break;
+                            case $name[1]:
+                                $pl->teleport(new Vector3(142, 19, 122));
+                                foreach ($this->getServer()->getLevels() as $level) {
+                                    foreach ($level->getEntities() as $entity) {
+                                        if ($entity->getTargetEntity() == $pl) {
+                                            $entity->close();
+                                            $pl->removeAllEffects();
+                                            if (!$par->get($pl->getName()) == null) {
+                                                if (!$pet->get($pl->getName()) == null) {
+                                                    $par->set($pl->getName(), "ds");
+                                                    $pet->set($pl->getName(), "ds");
+                                                    $par->save();
+                                                    $pet->save();
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                break;
+                            case $name[2]:
+                                $pl->teleport(new Vector3(140, 19, 135));
+                                foreach ($this->getServer()->getLevels() as $level) {
+                                    foreach ($level->getEntities() as $entity) {
+                                        if ($entity->getTargetEntity() == $pl) {
+                                            $entity->close();
+                                            $pl->removeAllEffects();
 
                                         }
                                     }
                                 }
-                            }
-                            break;
-                        case $name[2]:
-                            $pl->teleport(new Vector3(140, 19, 135));
-                            foreach ($this->getServer()->getLevels() as $level) {
-                                foreach ($level->getEntities() as $entity) {
-                                    if ($entity->getTargetEntity() == $pl) {
-                                        $entity->close();
-                                        $pl->removeAllEffects();
+                                break;
+                            case $name[3]:
+                                $pl->teleport(new Vector3(138, 19, 140));
+                                foreach ($this->getServer()->getLevels() as $level) {
+                                    foreach ($level->getEntities() as $entity) {
+                                        if ($entity->getTargetEntity() == $pl) {
+                                            $entity->close();
+                                            $pl->removeAllEffects();
+                                            if (!$par->get($pl->getName()) == null) {
+                                                if (!$pet->get($pl->getName()) == null) {
+                                                    $par->set($pl->getName(), "ds");
+                                                    $pet->set($pl->getName(), "ds");
+                                                    $par->save();
+                                                    $pet->save();
 
-                                    }
-                                }
-                            }
-                            break;
-                        case $name[3]:
-                            $pl->teleport(new Vector3(138, 19, 140));
-                            foreach ($this->getServer()->getLevels() as $level) {
-                                foreach ($level->getEntities() as $entity) {
-                                    if ($entity->getTargetEntity() == $pl) {
-                                        $entity->close();
-                                        $pl->removeAllEffects();
-                                        if (!$par->get($pl->getName()) == null) {
-                                            if (!$pet->get($pl->getName()) == null) {
-                                                $par->set($pl->getName(), "ds");
-                                                $pet->set($pl->getName(), "ds");
-                                                $par->save();
-                                                $pet->save();
+
+                                                }
 
 
                                             }
-
-
                                         }
                                     }
                                 }
-                            }
-                            break;
-                        case $name[4]:
-                            $pl->teleport(new Vector3(124, 19, 129));
-                            foreach ($this->getServer()->getLevels() as $level) {
-                                foreach ($level->getEntities() as $entity) {
-                                    if ($entity->getTargetEntity() == $pl) {
-                                        $entity->close();
-                                        $pl->removeAllEffects();
-                                        if (!$par->get($pl->getName()) == null) {
-                                            if (!$pet->get($pl->getName()) == null) {
-                                                $par->set($pl->getName(), "ds");
-                                                $pet->set($pl->getName(), "ds");
-                                                $par->save();
-                                                $pet->save();
+                                break;
+                            case $name[4]:
+                                $pl->teleport(new Vector3(124, 19, 129));
+                                foreach ($this->getServer()->getLevels() as $level) {
+                                    foreach ($level->getEntities() as $entity) {
+                                        if ($entity->getTargetEntity() == $pl) {
+                                            $entity->close();
+                                            $pl->removeAllEffects();
+                                            if (!$par->get($pl->getName()) == null) {
+                                                if (!$pet->get($pl->getName()) == null) {
+                                                    $par->set($pl->getName(), "ds");
+                                                    $pet->set($pl->getName(), "ds");
+                                                    $par->save();
+                                                    $pet->save();
+
+
+                                                }
 
 
                                             }
-
-
                                         }
                                     }
                                 }
-                            }
-                            break;
+                                break;
+                        }
                     }
                 }
+            };
+            $player->sendForm(new MenuForm($this->sendFormGames(), $accion));
+        }
+    }
+
+
+    public function onChat(PlayerChatEvent $event)
+    {
+        $player = $event->getPlayer();
+        $message = $event->getMessage();
+        $rank = DataExtractor::getPlayerRank($player);
+        $event->setFormat("§8> §7" . $player->getName() . " §8>> §7" . $message);
+        if ($rank != null) {
+            if ($rank == "diamond") {
+                $event->setFormat("§7[§l§bDiamond§r§7]§r §b" . $player->getName() . " §8> §7" . $message);
+            } elseif ($rank == "bedrock") {
+                $event->setFormat("§7[§r§5§lBedrock§r§7]§r §d" . $player->getName() . " §8> §7" . $message);
+            } elseif ($rank == "emerald") {
+                $event->setFormat("§7[§r§2§lEmerald§r§7]§r §b" . $player->getName() . " §6>>§a " . $message);
+            } elseif ($rank == "gold") {
+                $event->setFormat("§7[§r§e§lGold§r§7]§r §b" . " §b" . $player->getName() . " §8> §7" . $message);
+            } elseif ($rank == "vip") {
+                $event->setFormat("§7§kii§r§bVIP§7§kii§r §c" . $player->getName() . "§r §l§7»§r §f" . $message);
+            } elseif ($rank == "vip+") {
+                $event->setFormat("§7§kii§r§bVIP§6+§7§kii§r §c" . $player->getName() . "§r §l§7»§r §f" . $message);
+            } elseif ($rank == "youtuber") {
+                $event->setFormat("§7§kii§r§fYou§4Tuber§7§kii§r §c" . $player->getName() . "§r §l§7»§r §f" . $message);
+            } elseif ($rank == "helper") {
+                $event->setFormat("§7[§c§lHelper§7]§r §c" . $player->getName() . " §8> §7" . $message);
             }
-        };
-
-
-        $player->sendForm(new MenuForm($this->sendFormGames(), $accion));
-
-
+        }
     }
 }
 
-
-
-
-
-
-     public function onChat(PlayerChatEvent $event)
-        {
-     $player = $event->getPlayer();
-     $message = $event->getMessage();
-     $rank = new Config($this->getDataFolder() . "/rank.yml", Config::YAML);
-
-    $event->setFormat("§81 §7".$player->getName()." §8>> §7".$message);
-
-
-
-    if($rank->get($player->getName()) != null)
-		{
-			$r = $rank->get($player->getName());
-
-
-
-        if($r==$this->titan)
-        {
-          $event->setFormat("§7[§l§9HELPER§r§7]§r §b".$player->getName()." §8> §7".$message);
-        }
-        elseif($r==$this->dragon)
-        {
-          $event->setFormat("§7[§r§5§lObsidiana§r§7]§r §d".$player->getName()." §8> §7".$message);
-        }
-        elseif($r==$this->master)
-        {
-          $event->setFormat("§7[§r§3§lDiamond§r§7]§r §b".$player->getName()." §6>>§a ".$message);
-        }
-        elseif($r==$this->king)
-        {
-          $event->setFormat($r." §b".$player->getName()." §8> §7".$message);
-        }
-        elseif($r==$this->miniyt)
-        {
-          $event->setFormat("§7§kii§r§fMini§4YT§7§kii§r §c".$player->getName()."§r §l§7»§r §f".$message);
-        }
-        elseif($r==$this->yt)
-        {
-          $event->setFormat("§7§kii§r§fYou§4Tuber§7§kii§r §c".$player->getName()."§r §l§7»§r §f".$message);
-        }
-        elseif($r==$this->ytmas)
-        {
-          $event->setFormat("§7§kii§r§fYou§4Tuber§7§kii§r §c".$player->getName()."§r §l§7»§r §f".$message);
-        }
-        elseif($r==$this->admin)
-        {
-          $event->setFormat("§7[§c§lADMIN§7]§r §c".$player->getName()." §8> §7".$message);
-        }
-        elseif($r==$this->cr)
-        {
-          $event->setFormat("§7[§l§4OWNER§r§7]§r §c".$player->getName()." §8> §7".$message);
-        }
-        elseif($r==$this->fbi)
-        {
-          $event->setFormat("§7[§l§2MOD§r§7]§r §a".$player->getName()." §8> §7".$message);
-        }
-
-
-
-    }
-     }
-
-
-
-
-}
-class Taska extends Task{
+class Taska extends Task
+{
 
     public $plugin;
-    public function __construct(Main $plugin)
-	{
-		$this->plugin = $plugin;
 
-	}
-
-    public function onRun(int $tick)
-	{
-
-
-
-
-    $lobby = $this->plugin->getServer()->getLevelByName(Server::getInstance()->getDefaultLevel()->getName());
-
-     if($lobby instanceof Level)
-				{
-
-         $players = $lobby->getPlayers();
-
-         foreach($players as $pl)
-         {
-  $pl->setFood(20);
-  $pl->setHealth(20);
-$pl->sendTip("§f{TheCod§4ê§f}§7 Beta Editon | " . "§cPlayers online:§6 " . count(Server::getInstance()->getOnlinePlayers()));
-
-
-         }
-
-
-
-
-
-         }
-
-
-     }
-
-
-    }
-
-
-  class Boss extends Task{
-
-    public $plugin;
     public function __construct(Main $plugin)
     {
         $this->plugin = $plugin;
@@ -1813,6 +1286,34 @@ $pl->sendTip("§f{TheCod§4ê§f}§7 Beta Editon | " . "§cPlayers online:§6 " 
 
     public function onRun(int $tick)
     {
-      $this->plugin->sendBossBar();
-         }
-         }
+        $lobby = $this->plugin->getServer()->getLevelByName(Server::getInstance()->getDefaultLevel()->getName());
+        if ($lobby instanceof Level) {
+            $players = $lobby->getPlayers();
+            foreach ($players as $pl) {
+                $pl->setFood(20);
+                $pl->setHealth(20);
+                $deaths = DataExtractor::getPlayerDeaths($pl);
+                $kills = DataExtractor::getPlayerKills($pl);
+                $money = DataExtractor::getPlayerMoney($pl);
+                $pl->sendTip("§f{TheCod§4ê§f}§7 Beta Edition | " . "§cPlayers online:§6 " . count(Server::getInstance()->getOnlinePlayers()) . "\n            §2Kills: §e" . $kills . " §2Deaths: §e" . $deaths . " §2Money: §e" . $money);
+            }
+        }
+    }
+}
+
+
+class Boss extends Task
+{
+    public $plugin;
+
+    public function __construct(Main $plugin)
+    {
+        $this->plugin = $plugin;
+
+    }
+
+    public function onRun(int $tick)
+    {
+        $this->plugin->sendBossBar();
+    }
+}

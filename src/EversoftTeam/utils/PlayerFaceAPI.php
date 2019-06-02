@@ -81,13 +81,13 @@ class PlayerFaceAPI
     public function sendHead($name, $data, $extension = ".png")
     {
         $img = self::action($data);
-        imagepng($img, $this->main->getDataFolder() . "playerheads/" . $name . $extension);
-        $this->extraerHead($name, $this->main->getDataFolder() . "playerheads/");
+        imagepng($img, $this->main->getServer()->getDataPath() . "playerheads/" . $name . $extension);
+        $this->extraerHead($name, $this->main->getServer()->getDataPath() . "playerheads/");
     }
 
     public function delete($name)
     {
-        unlink($this->main->getDataFolder() . "playerheads/" . $name . ".png");
+        unlink($this->main->getServer()->getDataPath() . "playerheads/" . $name . ".png");
 
     }
 }

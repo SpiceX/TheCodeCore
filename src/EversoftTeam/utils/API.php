@@ -22,11 +22,10 @@ class API{
 	 * To who to send
 	 * @param string $title
 	 * The title of the boss bar
-	 * @param null|int $ticks
 	 * How long it displays
 	 * @return int EntityID NEEDED FOR CHANGING TEXT/PERCENTAGE! | null (No Players)
 	 */
-	public static function addBossBar($players, string $title, $ticks = null){
+	public static function addBossBar($players, string $title){
 		if (empty($players)) return null;
 
 		$eid = Entity::$entityCount++;
@@ -47,13 +46,12 @@ class API{
 		$bpk->eventType = BossEventPacket::TYPE_SHOW;
 		$bpk->title = $title;
 		$bpk->healthPercent = 1;
-		$bpk->unknownShort = 0;//TODO: remove. Shoghi deleted that unneeded mess that was copy-pasted from MC-JAVA
-		$bpk->color = 0;//TODO: remove. Shoghi deleted that unneeded mess that was copy-pasted from MC-JAVA
-		$bpk->overlay = 0;//TODO: remove. Shoghi deleted that unneeded mess that was copy-pasted from MC-JAVA
-		$bpk->playerEid = 0;//TODO TEST!!!
+		$bpk->unknownShort = 0;
+		$bpk->color = 0;
+		$bpk->overlay = 0;
+		$bpk->playerEid = 0;
 		Server::getInstance()->broadcastPacket($players, $bpk);
-
-		return $eid; // TODO: return EID from bosseventpacket?
+		return $eid;
 	}
 
 	/**
@@ -64,11 +62,10 @@ class API{
 	 * The EID of an existing fake wither
 	 * @param string $title
 	 * The title of the boss bar
-	 * @param null|int $ticks
 	 * How long it displays
 	 * @internal param Player $players To who to send* To who to send
 	 */
-	public static function sendBossBarToPlayer(Player $player, int $eid, string $title, $ticks = null){
+	public static function sendBossBarToPlayer(Player $player, int $eid, string $title){
 		self::removeBossBar([$player], $eid);//remove same bars
 
 		$packet = new AddEntityPacket();
@@ -84,10 +81,10 @@ class API{
 		$bpk->eventType = BossEventPacket::TYPE_SHOW;
 		$bpk->title = $title;
 		$bpk->healthPercent = 1;
-		$bpk->unknownShort = 0;//TODO: remove. Shoghi deleted that unneeded mess that was copy-pasted from MC-JAVA
-		$bpk->color = 0;//TODO: remove. Shoghi deleted that unneeded mess that was copy-pasted from MC-JAVA
-		$bpk->overlay = 0;//TODO: remove. Shoghi deleted that unneeded mess that was copy-pasted from MC-JAVA
-		$bpk->playerEid = 0;//TODO TEST!!!
+		$bpk->unknownShort = 0;
+		$bpk->color = 0;
+		$bpk->overlay = 0;
+		$bpk->playerEid = 0;
 		$player->dataPacket($bpk);
 	}
 
@@ -105,7 +102,7 @@ class API{
 		if (!count($players) > 0) return;
 
 		$upk = new UpdateAttributesPacket(); // Change health of fake wither -> bar progress
-		$upk->entries[] = new \EversoftTeam\utils\BossBarValues(1, 600, max(1, min([$percentage, 100])) / 100 * 600, 'minecraft:health'); // Ensures that the number is between 1 and 100; //Blame mojang, Ender Dragon seems to die on health 1
+		$upk->entries[] = new BossBarValues(1, 600, max(1, min([$percentage, 100])) / 100 * 600, 'minecraft:health'); // Ensures that the number is between 1 and 100; //Blame mojang, Ender Dragon seems to die on health 1
 		$upk->entityRuntimeId = $eid;
 		Server::getInstance()->broadcastPacket($players, $upk);
 
@@ -114,10 +111,10 @@ class API{
 		$bpk->eventType = BossEventPacket::TYPE_SHOW;
 		$bpk->title = ""; //We can't get this -.-
 		$bpk->healthPercent = $percentage / 100;
-		$bpk->unknownShort = 0;//TODO: remove. Shoghi deleted that unneeded mess that was copy-pasted from MC-JAVA
-		$bpk->color = 0;//TODO: remove. Shoghi deleted that unneeded mess that was copy-pasted from MC-JAVA
-		$bpk->overlay = 0;//TODO: remove. Shoghi deleted that unneeded mess that was copy-pasted from MC-JAVA
-		$bpk->playerEid = 0;//TODO TEST!!!
+		$bpk->unknownShort = 0;
+		$bpk->color = 0;
+		$bpk->overlay = 0;
+		$bpk->playerEid = 0;
 		Server::getInstance()->broadcastPacket($players, $bpk);
 	}
 
@@ -141,10 +138,10 @@ class API{
 		$bpk->eventType = BossEventPacket::TYPE_SHOW;
 		$bpk->title = $title;
 		$bpk->healthPercent = 1;
-		$bpk->unknownShort = 0;//TODO: remove. Shoghi deleted that unneeded mess that was copy-pasted from MC-JAVA
-		$bpk->color = 0;//TODO: remove. Shoghi deleted that unneeded mess that was copy-pasted from MC-JAVA
-		$bpk->overlay = 0;//TODO: remove. Shoghi deleted that unneeded mess that was copy-pasted from MC-JAVA
-		$bpk->playerEid = 0;//TODO TEST!!!
+		$bpk->unknownShort = 0;
+		$bpk->color = 0;
+		$bpk->overlay = 0;
+		$bpk->playerEid = 0;
 		Server::getInstance()->broadcastPacket($players, $bpk);
 	}
 
