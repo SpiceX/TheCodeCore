@@ -21,9 +21,9 @@ use EversoftTeam\shop\{ShopEntity, ShopEntity1, ShopEntity2, ShopEntity3, ShopUp
 use EversoftTeam\SQLConnection\DatabaseConnection;
 use EversoftTeam\SQLConnection\DatabaseEventHandler;
 use EversoftTeam\SQLConnection\DataExtractor;
-use EversoftTeam\utils\API;
+use EversoftTeam\Utils\API;
 use EversoftTeam\Utils\CoreUtils;
-use EversoftTeam\utils\PlayerFaceAPI;
+use EversoftTeam\Utils\PlayerFaceAPI;
 use pocketmine\entity\Effect;
 use pocketmine\entity\EffectInstance;
 use pocketmine\entity\Entity;
@@ -79,9 +79,8 @@ class Main extends PluginBase implements Listener
     public function sendBossBar()
     {
         foreach ($this->getServer()->getOnlinePlayers() as $player) {
-            API::setTitle($this->Text($player), $this->id, [$player]);
             API::setPercentage(100, $this->id);
-
+            API::setTitle($this->Text(), $this->id, [$player]);
         }
     }
 
@@ -292,7 +291,6 @@ class Main extends PluginBase implements Listener
 //ACCIONES COINS
 
 
-
     public function onDisable()
     {
         $this->removePets();
@@ -323,7 +321,6 @@ class Main extends PluginBase implements Listener
         Entity::registerEntity(ShopEntity3::class, true);
         @mkdir($this->getDataFolder());
         $config = new Config($this->getDataFolder() . "/rank.yml", Config::YAML);
-        $this->sendBossBar();
         $config->save();
         $configa = new Config($this->getDataFolder() . "/pet.yml", Config::YAML);
         $configa->save();
@@ -825,7 +822,7 @@ class Main extends PluginBase implements Listener
      * @param Player $player
      * @return bool
      */
-    public function lobby(Player $player) : bool
+    public function lobby(Player $player): bool
     {
         if ($player->getLevel()->getFolderName() == Server::getInstance()->getDefaultLevel()->getName()) {
             $this->getServer()->loadLevel(Server::getInstance()->getDefaultLevel()->getName());
@@ -835,7 +832,6 @@ class Main extends PluginBase implements Listener
         }
         return true;
     }
-
 
 
     public function onBreak(BlockBreakEvent $event)
@@ -916,34 +912,23 @@ class Main extends PluginBase implements Listener
 
     public function onPlayerInteractEvent(PlayerInteractEvent $event)
     {
-
         if ($event->getPlayer()->getLevel()->getName() == Server::getInstance()->getDefaultLevel()->getName()) {
             $i = $event->getItem();
             $player = $event->getPlayer();
             if ($i->getId() == Item::COMPASS) {
-                $this->GamesTP($player);
+                $event->getPlayer()->sendMessage("Teleports");
             } elseif ($i->getId() == Item::SKULL) {
-                $this->sendSoonMessage($player);
+                $event->getPlayer()->sendMessage("Pets");
             } elseif ($i->getId() == Item::CHEST) {
-                $this->addMenuCos($player);
+                $event->getPlayer()->sendMessage("Games");
             } elseif ($i->getId() == Item::DYE) {
-                $this->sendSoonMessage($player);
+                $event->getPlayer()->sendMessage("Particulas");
             } elseif ($i->getId() == Item::NETHER_STAR) {
-                $this->sendPlayerForm($player);
+                $event->getPlayer()->sendMessage("Cosmeticos");
             }
-
-
         }
-
-
     }
 
-
-    public function sendSoonMessage(Player $player)
-    {
-        $player->sendMessage($this->prefix . " §7Esto estara muy pronto");
-        return true;
-    }
 
     public function infoadmin(Player $player)
     {
@@ -989,97 +974,6 @@ class Main extends PluginBase implements Listener
         return $datos;
     }
 
-    public function addMenuCos(Player $player)
-    {
-        $accion = function ($player, $data) {
-            $name = array("§l§eStand Creeper\n§r§5Type§7: §aPet", "§l§eHelix\n§r§5Type§7: §aParticle", "§l§eMini Me\n§r§5Type§7: §aPet", "§l§eSpider\n§r§5Type§7: §aMorph", "§l§eWitch\n§r§5Type§7: §aMorph");
-            if ($player instanceof Player) {
-                switch ($name[$data]) {
-                    case "§l§eStand Creeper\n§r§5Type§7: §aPet":
-                        if ($this->checkPermission($player) == "part") {
-                            $player->sendMessage("§9- §7Compra rank para usar cosmeticos");
-                        }
-                        if ($this->checkPermission($player) == "no") {
-                            $player->sendMessage("§9- §7Compra rank para usar cosmeticos");
-                        }
-                        if ($this->checkPermission($player) == "owner") {
-                            $this->createPet($player, "creepe");
-                        }
-                        if ($this->checkPermission($player) == "vip") {
-                            $this->createPet($player, "creepe");
-                        }
-                        break;
-                    case "§l§eHelix\n§r§5Type§7: §aParticle":
-                        if ($this->checkPermission($player) == "owner") {
-                            $this->addPArticle($player);
-                        }
-                        if ($this->checkPermission($player) == "vip") {
-                            $this->addPArticle($player);
-                        }
-                        if ($this->checkPermission($player) == "part") {
-                            $this->addPArticle($player);
-                        }
-                        if ($this->checkPermission($player) == "no") {
-                            $player->sendMessage("§9- §7Compra rank para usar cosmeticos");
-                        }
-                        break;
-                    case "§cNo tienes cosmeticos Disponibles\n§eCompra Rank para liberar":
-                        if ($this->checkPermission($player) == "no") {
-                            $player->sendMessage("§9- §7Compra rank para usar cosmeticos");
-                        }
-
-                        break;
-                    case "§l§eMini Me\n§r§5Type§7: §aPet":
-                        if ($this->checkPermission($player) == "part") {
-                            $player->sendMessage("§9- §7Compra rank para usar cosmeticos");
-                        }
-                        if ($this->checkPermission($player) == "no") {
-                            $player->sendMessage("§9- §7Compra rank para usar cosmeticos");
-                        }
-                        if ($this->checkPermission($player) == "owner") {
-                            $this->createPet($player, "me");
-                        }
-                        if ($this->checkPermission($player) == "vip") {
-                            $this->createPet($player, "me");
-                        }
-
-                        break;
-                    case "§l§eSpider\n§r§5Type§7: §aMorph":
-                        if ($this->checkPermission($player) == "part") {
-                            $player->sendMessage("§9- §7Compra rank para usar cosmeticos");
-                        }
-                        if ($this->checkPermission($player) == "no") {
-                            $player->sendMessage("§9- §7Compra rank para usar cosmeticos");
-                        }
-                        if ($this->checkPermission($player) == "owner") {
-                            $this->addMorphs($player, "spider");
-                        }
-                        if ($this->checkPermission($player) == "vip") {
-                            $this->addMorphs($player, "spider");
-                        }
-
-                        break;
-                    case "§l§eWitch\n§r§5Type§7: §aMorph":
-                        if ($this->checkPermission($player) == "part") {
-                            $player->sendMessage("§9- §7Compra rank para usar cosmeticos");
-                        }
-                        if ($this->checkPermission($player) == "no") {
-                            $player->sendMessage("§9- §7Compra rank para usar cosmeticos");
-                        }
-                        if ($this->checkPermission($player) == "owner") {
-                            $this->addMorphs($player, "witch");
-                        }
-                        if ($this->checkPermission($player) == "vip") {
-                            $this->addMorphs($player, "witch");
-                        }
-                        break;
-                }
-
-            };
-        };
-        $player->sendForm(new MenuForm($this->dataPet($player), $accion));
-    }
-
 
     public function sendFormMB(): array
     {
@@ -1103,7 +997,8 @@ class Main extends PluginBase implements Listener
 
     public function sendPlayerForm(Player $pl)
     {
-        $accion = function ($pl, $data) {};
+        $accion = function ($pl, $data) {
+        };
         $pl->sendForm(new MenuForm($this->sendFormMB(), $accion));
     }
 
@@ -1112,7 +1007,7 @@ class Main extends PluginBase implements Listener
         $datos = array(
 
             "type" => "form",
-            "title" => "§k§6iii§r§9§lTravel§r§k§6iii§r",
+            "title" => "§k§6iii§r§9§lGames§r§k§6iii§r",
             "content" => "",
             "buttons" => array()
 
