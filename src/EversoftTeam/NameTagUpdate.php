@@ -1,103 +1,45 @@
 <?php
+declare(strict_types=1);
 namespace EversoftTeam;
 
+use EversoftTeam\SQLConnection\DataExtractor;
 use pocketmine\scheduler\Task;
-use pocketmine\utils\Config;
 
-class NameTagUpdate extends Task {
+class NameTagUpdate extends Task
+{
 
-private $plugin;
-public function __construct(Main $eid){
+    private $main;
 
-		$this->plugin = $eid;
+    public function __construct(Main $main)
+    {
 
-	}
-public function onRun(int $currentTick){
-	$world = $this->plugin->getServer()->getDefaultLevel();
-	foreach($world->getPlayers() as $player){
+        $this->main = $main;
 
- $rank = new Config($this->plugin->getDataFolder() . "/rank.yml", Config::YAML);
- $r = $rank->get($player->getName());
+    }
 
-if($r == $this->plugin->titan)
-        {
-          
-            $player->setNameTag($this->plugin->titan.$player->getName());
-            
-            
-           
-            
-        }
-        elseif($r == $this->plugin->dragon)
-        {
-           
-            $player->setNameTag($this->plugin->dragon.$player->getName());
-           
-              
-        }
-        elseif($r == $this->plugin->master)
-        {
-             
-            $player->setNameTag($this->plugin->master.$player->getName());
-            
-             
-        }
-        elseif($r == $this->plugin->king)
-        {
-             
-            $player->setNameTag($this->plugin->king.$player->getName());
-            
-              
-        }
-        elseif($r == $this->plugin->miniyt)
-        {
-            
-            $player->setNameTag($this->plugin->miniyt.$player->getName());
-           
-             
-        }
-        elseif($r == $this->plugin->yt)
-        {
-            
-            $player->setNameTag($this->plugin->yt.$player->getName());
-            
-             
-        }
-        elseif($r == $this->plugin->ytmas)
-        {
-            
-            $player->setNameTag($this->plugin->ytmas.$player->getName());
-            
-             
-        }
-        elseif($r == $this->plugin->fbi)
-        {
-             
-            $player->setNameTag($this->plugin->fbi.$player->getName());
-          
-          
-        }
-        elseif($r == $this->plugin->cr)
-        {
-          
-            
-            $player->setNameTag($this->plugin->cr.$player->getName());
-        }
-        elseif($r == $this->plugin->admin)
-        {
-            
-            $player->setNameTag($this->plugin->admin.$player->getName());
-            ;
+    public function onRun(int $currentTick)
+    {
+        $world = $this->main->getServer()->getDefaultLevel();
+        foreach ($world->getPlayers() as $player) {
+            $r = DataExtractor::getPlayerRank($player);
+            if ($r == "diamond") {
+                $player->setNameTag("§l§bDiamond§r§7" . $player->getName());
+            } elseif ($r == "vip") {
+                $player->setNameTag("§7§kii§r§bVIP§6+§7§kii§r §c" . $player->getName());
+            } elseif ($r == "vip+") {
+                $player->setNameTag("§7§kii§r§bVIP§6+§7§kii§r §c" . $player->getName());
+            } elseif ($r == "emerald") {
+                $player->setNameTag("§r§2§lEmerald§r§7" . $player->getName());
+            } elseif ($r == "bedrock") {
+                $player->setNameTag("§r§5§lBedrock§r§7" . $player->getName());
+            } elseif ($r == "gold") {
+                $player->setNameTag("§r§e§lGold§r§7" . $player->getName());
+            } elseif ($r == "youtuber") {
+                $player->setNameTag("§7§kii§r§fYou§4Tuber§7§kii§r §c" . $player->getName());
+            }
         }
 
-
-
-	}
-
-	}
-
-
-
+    }
 
 
 }
