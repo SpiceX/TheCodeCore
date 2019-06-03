@@ -315,8 +315,6 @@ class Main extends PluginBase implements Listener
         $npcgame->setNametagVisible(true);
         $npcgame->setNameTagAlwaysVisible(true);
         $npcgame->spawnToAll();
-
-
     }
 
     public function createShop2(Level $level, Vector3 $pos)
@@ -327,8 +325,6 @@ class Main extends PluginBase implements Listener
         $npcgame->setNametagVisible(true);
         $npcgame->setNameTagAlwaysVisible(true);
         $npcgame->spawnToAll();
-
-
     }
 
     public function createShop3(Level $level, Vector3 $pos)
@@ -512,6 +508,22 @@ class Main extends PluginBase implements Listener
         return $datos;
     }
 
+    public function sendParticlesForm()
+    {
+        $datos = array(
+
+            "type" => "form",
+            "title" => "§k§6iii§r§9§lParticulas§r§k§6iii§r",
+            "content" => "",
+            "buttons" => array()
+
+        );
+        for ($i = 0; $i < 3; $i++) {
+            $name = array("§cCerrar menu","§cDesactivar particulas","§k§aiii§r§l§6Helix§r§k§aiii§r\n§eCrea una helice de fuego!");
+            $datos["buttons"][] = array("text" => $name[$i]);
+        }
+        return $datos;
+    }
 
     public function GamesTP(Player $player)
     {
@@ -524,7 +536,7 @@ class Main extends PluginBase implements Listener
                     if ($pl instanceof Player) {
                         switch ($name[$data]) {
                             case $name[0]:
-                                $pl->teleport(new Vector3(140, 19, 116));
+                                //$pl->teleport(new Vector3(140, 19, 116)); action
                                 foreach ($this->getServer()->getLevels() as $level) {
                                     foreach ($level->getEntities() as $entity) {
                                         if ($entity->getTargetEntity() == $pl) {
@@ -539,8 +551,6 @@ class Main extends PluginBase implements Listener
 
 
                                                 }
-
-
                                             }
 
                                         }
@@ -548,7 +558,7 @@ class Main extends PluginBase implements Listener
                                 }
                                 break;
                             case $name[1]:
-                                $pl->teleport(new Vector3(142, 19, 122));
+                               // $pl->teleport(new Vector3(142, 19, 122)); action
                                 foreach ($this->getServer()->getLevels() as $level) {
                                     foreach ($level->getEntities() as $entity) {
                                         if ($entity->getTargetEntity() == $pl) {
@@ -567,7 +577,7 @@ class Main extends PluginBase implements Listener
                                 }
                                 break;
                             case $name[2]:
-                                $pl->teleport(new Vector3(140, 19, 135));
+                               // $pl->teleport(new Vector3(140, 19, 135)); action
                                 foreach ($this->getServer()->getLevels() as $level) {
                                     foreach ($level->getEntities() as $entity) {
                                         if ($entity->getTargetEntity() == $pl) {
@@ -579,7 +589,7 @@ class Main extends PluginBase implements Listener
                                 }
                                 break;
                             case $name[3]:
-                                $pl->teleport(new Vector3(138, 19, 140));
+                              //  $pl->teleport(new Vector3(138, 19, 140)); action
                                 foreach ($this->getServer()->getLevels() as $level) {
                                     foreach ($level->getEntities() as $entity) {
                                         if ($entity->getTargetEntity() == $pl) {
@@ -594,15 +604,13 @@ class Main extends PluginBase implements Listener
 
 
                                                 }
-
-
                                             }
                                         }
                                     }
                                 }
                                 break;
                             case $name[4]:
-                                $pl->teleport(new Vector3(124, 19, 129));
+                           //     $pl->teleport(new Vector3(124, 19, 129)); action
                                 foreach ($this->getServer()->getLevels() as $level) {
                                     foreach ($level->getEntities() as $entity) {
                                         if ($entity->getTargetEntity() == $pl) {
@@ -614,11 +622,7 @@ class Main extends PluginBase implements Listener
                                                     $pet->set($pl->getName(), "ds");
                                                     $par->save();
                                                     $pet->save();
-
-
                                                 }
-
-
                                             }
                                         }
                                     }
@@ -629,6 +633,40 @@ class Main extends PluginBase implements Listener
                 }
             };
             $player->sendForm(new MenuForm($this->sendFormGames(), $accion));
+        }
+    }
+
+    public function ParticlesForm(Player $player) {
+        if ($player instanceof Player) {
+            $accion = function ($pl, $data) {
+                $config = new Config($this->getDataFolder() . "/particle.yml", Config::YAML);
+                if ($data != null) {
+                    $name = array("§cCerrar menu","§cDesactivar particulas","§k§aiii§r§l§6Helix§r§k§aiii§r\n§eCrea una helice de fuego!");
+                    $rank = DataExtractor::getPlayerRank($pl);
+                    $ranks = ["diamond", "gold", "emerald", "vip", "vip+", "youtuber", "bedrock"];
+                    if ($pl instanceof Player){
+                        switch ($name[$data]) {
+                            case $name[0]:
+                                return;
+                                break;
+                            case $name[1]:
+                                $config->remove($pl->getName());
+                                $config->save();
+                                break;
+                            case $name[2]:
+                                if (isset($rank, $ranks)) {
+                                    $config->set($pl->getName(), "ac");
+                                    $config->save();
+                                    $pl->sendMessage(CoreUtils::PREFIX . "§aParticula Helix activada con exito!");
+                                } else {
+                                    $pl->sendMessage(CoreUtils::NO_COSM);
+                                }
+                                break;
+                        }
+                    }
+                }
+            };
+            $player->sendForm(new MenuForm($this->sendParticlesForm(), $accion));
         }
     }
 

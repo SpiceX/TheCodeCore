@@ -27,10 +27,12 @@ class GadgetsCommand extends Command implements PluginIdentifiableCommand
 
     public function execute(CommandSender $sender, string $commandLabel, array $args)
     {
-        if ($sender instanceof Player) {
+        if ($sender->hasPermission("code.cmd.gadgets")) {
+            if ($sender instanceof Player) {
 
-        } else {
-            $sender->sendMessage(CoreUtils::USE_IN_GAME);
+            } else {
+                $sender->sendMessage(CoreUtils::USE_IN_GAME);
+            }
         }
     }
 }

@@ -28,12 +28,14 @@ class HubCommand extends Command implements PluginIdentifiableCommand
 
     public function execute(CommandSender $sender, string $commandLabel, array $args)
     {
-        if ($sender instanceof Player) {
-            $lobby = Server::getInstance()->getDefaultLevel()->getSafeSpawn();
-            $sender->sendMessage(CoreUtils::GOING_LOBBY);
-            $sender->teleport($lobby);
-        } else {
-            $sender->sendMessage(CoreUtils::USE_IN_GAME);
+        if ($sender->hasPermission("code.cmd.hub")) {
+            if ($sender instanceof Player) {
+                $lobby = Server::getInstance()->getDefaultLevel()->getSafeSpawn();
+                $sender->sendMessage(CoreUtils::GOING_LOBBY);
+                $sender->teleport($lobby);
+            } else {
+                $sender->sendMessage(CoreUtils::USE_IN_GAME);
+            }
         }
     }
 }

@@ -28,4 +28,6 @@ class CoreUtils
     "\n§a- VIP" .
     "\n§a- VIP+";
     const OFFLINE = self::PREFIX . "§7El jugador no esta en linea!";
+    const NO_PERM = self::PREFIX . "§cNo tienes permiso de usar este comando!";
+    const NO_COSM = self::PREFIX . "§cNo tienes permiso de usar este cosmetico! §aPuedes comprarlo en la tienda";
 }

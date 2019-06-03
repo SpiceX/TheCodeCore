@@ -12,6 +12,9 @@ permissions:
       code.cmd.particles:
         description: particles permission
         default: op
+      code.cmd.particles.helix:
+        description: helix particle permission
+        default: false
       code.cmd.pets:
         description: pets permission
         default: op
@@ -27,4 +30,9 @@ permissions:
       code.cmd.hub:
         description: hub permission
         default: true
-
+      code.cmd.gadgets:
+        description: gadgets permission
+        default: true
+      code.cmd.gadgets.tnt:
+        description: gadget tnt permission
+        default: false

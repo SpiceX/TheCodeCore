@@ -74,9 +74,9 @@ class GlobalEventHandler implements Listener
             } elseif ($i->getId() == Item::SKULL) {
                 $event->getPlayer()->sendMessage("Pets");
             } elseif ($i->getId() == Item::CHEST) {
-                $event->getPlayer()->sendMessage("Games");
+                $this->main->GamesTP($event->getPlayer());
             } elseif ($i->getId() == Item::DYE) {
-                $event->getPlayer()->sendMessage("Particulas");
+                $this->main->ParticlesForm($event->getPlayer());
             } elseif ($i->getId() == Item::NETHER_STAR) {
                 $event->getPlayer()->sendMessage("Cosmeticos");
             }
@@ -108,6 +108,10 @@ class GlobalEventHandler implements Listener
             if ($rank == "diamond") {
                 $event->setFormat("§7[§l§bDiamond§r§7]§r §b" . $player->getName() . " §8> §7" . $message);
             } elseif ($rank == "bedrock") {
+                $event->setFormat("§7[§r§5§lBedrock§r§7]§r §d" . $player->getName() . " §8> §7" . $message);
+            } elseif ($rank == "user") {
+                $event->setFormat("§8> §7" . $player->getName() . " §8>> §7" . $message);
+            } elseif ($rank == "helper") {
                 $event->setFormat("§7[§r§5§lBedrock§r§7]§r §d" . $player->getName() . " §8> §7" . $message);
             } elseif ($rank == "emerald") {
                 $event->setFormat("§7[§r§2§lEmerald§r§7]§r §b" . $player->getName() . " §6>>§a " . $message);

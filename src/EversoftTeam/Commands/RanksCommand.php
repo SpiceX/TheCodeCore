@@ -62,6 +62,12 @@ class RanksCommand extends Command implements PluginIdentifiableCommand
                                     } elseif ($args[2] == "vip+") {
                                         DataExtractor::setPlayerRank($args[1], $args[2]);
                                         $sender->sendMessage(CoreUtils::PREFIX . "§7Has dado el rango " . $args[2] . " a el jugador " . $args[1]);
+                                    } elseif ($args[2] == "user") {
+                                        DataExtractor::setPlayerRank($args[1], $args[2]);
+                                        $sender->sendMessage(CoreUtils::PREFIX . "§7Has dado el rango " . $args[2] . " a el jugador " . $args[1]);
+                                    } elseif ($args[2] == "helper") {
+                                        DataExtractor::setPlayerRank($args[1], $args[2]);
+                                        $sender->sendMessage(CoreUtils::PREFIX . "§7Has dado el rango " . $args[2] . " a el jugador " . $args[1]);
                                     } else {
                                         $sender->sendMessage(CoreUtils::RANK_HELP);
                                     }
