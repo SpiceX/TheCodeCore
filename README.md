@@ -1,4 +1,4 @@
 # TheCodeCore
-![My image](username.github.com/repository/img/image.jpg)
+![My image](https://github.com/PocketmineSmashPE/TheCodeCore/blob/master/icon.jpg)
 
 Core for TheCode Server
