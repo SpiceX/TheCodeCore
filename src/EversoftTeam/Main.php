@@ -2,33 +2,27 @@
 
 namespace EversoftTeam;
 
-use EversoftTeam\EventListeners\GlobalEventHandler;
 use EversoftTeam\Commands\GadgetsCommand;
 use EversoftTeam\Commands\HubCommand;
 use EversoftTeam\Commands\ParticlesCommand;
 use EversoftTeam\Commands\RanksCommand;
 use EversoftTeam\Commands\StatsCommand;
 use EversoftTeam\Commands\TopsCommand;
+use EversoftTeam\EventListeners\GlobalEventHandler;
 use EversoftTeam\Form\MenuForm;
 use EversoftTeam\Morphs\SpiderM;
-use EversoftTeam\Morphs\util\Morph;
 use EversoftTeam\Morphs\WitchM;
-use EversoftTeam\Particula\Helix;
 use EversoftTeam\Pet\Armor;
 use EversoftTeam\Pet\MePet;
-use EversoftTeam\Pet\Stand;
-use EversoftTeam\Pet\util\Pet;
-use EversoftTeam\shop\{ShopEntity, ShopEntity1, ShopEntity2, ShopEntity3, ShopUpdate};
+use EversoftTeam\shop\{ShopEntity, ShopEntity1, ShopEntity2, ShopEntity3};
 use EversoftTeam\SQLConnection\DatabaseConnection;
 use EversoftTeam\SQLConnection\DatabaseEventHandler;
 use EversoftTeam\SQLConnection\DataExtractor;
 use EversoftTeam\Utils\API;
 use EversoftTeam\Utils\CoreUtils;
 use pocketmine\entity\Entity;
-use pocketmine\event\Listener;
 use pocketmine\item\Item;
 use pocketmine\level\Level;
-use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
@@ -36,7 +30,7 @@ use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 
-class Main extends PluginBase implements Listener
+class Main extends PluginBase
 {
 
     public $id = 44444;
@@ -68,63 +62,8 @@ class Main extends PluginBase implements Listener
         API::removeBossBar([$player], $this->id);
     }
 
-    public function addMorphs(Player $player, $type)
-    {
-        $par = new Config($this->getDataFolder() . "/mor.yml", Config::YAML);
-        $pet = new Config($this->getDataFolder() . "/pet.yml", Config::YAML);
-        $p = $par->get($player->getName());
-        if ($p == null) {
-            $par->set($player->getName(), "ac");
-            $par->save();
-            foreach ($this->getServer()->getLevels() as $level) {
-                foreach ($level->getEntities() as $entity) {
-                    if ($entity instanceof Player) {
-                        if ($entity->getTargetEntity() == $player) {
-                            $entity->close();
-                        }
-                    }
-                }
-            }
-            $pet->set($player->getName(), "ds");
-            $pet->save();
-            $player->removeAllEffects();
-            new Morph($player, $type);
-        }
-        if ($p == "ac") {
-            $par->set($player->getName(), "ds");
-            $par->save();
-            foreach ($this->getServer()->getLevels() as $level) {
-                foreach ($level->getEntities() as $entity) {
-                    if ($entity->getTargetEntity() == $player) {
-                        $entity->close();
 
-                    }
-                }
-            }
-            $player->removeAllEffects();
-        }
-        if ($p == "ds") {
-            $par->set($player->getName(), "ac");
-            $par->save();
-            foreach ($this->getServer()->getLevels() as $level) {
-                foreach ($level->getEntities() as $entity) {
-                    if ($entity->getTargetEntity() == $player) {
-                        $entity->close();
-
-                    }
-                }
-            }
-            $pet->set($player->getName(), "ds");
-            $pet->save();
-            $player->removeAllEffects();
-            new Morph($player, $type);
-        }
-
-
-    }
-
-
-    public function addPArticle(Player $player)
+    public function addParticle(Player $player)
     {
         $par = new Config($this->getDataFolder() . "/particle.yml", Config::YAML);
         $p = $par->get($player->getName());
@@ -146,67 +85,15 @@ class Main extends PluginBase implements Listener
 
     }
 
-    public function createPet(Player $player, $type)
-    {
-        $par = new Config($this->getDataFolder() . "/mor.yml", Config::YAML);
-        $pet = new Config($this->getDataFolder() . "/pet.yml", Config::YAML);
-        $p = $pet->get($player->getName());
-        if ($p == null) {
-            $pet->set($player->getName(), "ac");
-            $pet->save();
-            $par->set($player->getName(), "ds");
-            $par->save();
-
-            new Pet($player, $type);
-            $player->removeAllEffects();
-            $player->sendMessage("§7[§aPet§7]§e Me extrañaste?");
-        }
-        if ($p == "ds") {
-            foreach ($this->getServer()->getLevels() as $level) {
-                foreach ($level->getEntities() as $entity) {
-                    if ($entity->getTargetEntity() == $player) {
-                        $entity->close();
-
-                    }
-                }
-            }
-            new Pet($player, $type);
-            $par->set($player->getName(), "ds");
-            $par->save();
-
-            $player->removeAllEffects();
-            $player->sendMessage("§7[§aPet§7]§e Me extrañaste?");
-            $pet->set($player->getName(), "ac");
-            $pet->save();
-        }
-        if ($p == "ac") {
-            foreach ($this->getServer()->getLevels() as $level) {
-                foreach ($level->getEntities() as $entity) {
-                    if ($entity->getTargetEntity() == $player) {
-                        $entity->close();
-
-                    }
-                }
-            }
-            $par->set($player->getName(), "ds");
-            $par->save();
-            $player->removeAllEffects();
-            $player->sendMessage("§7[§aPet§7]§e Adios!");
-            $pet->set($player->getName(), "ds");
-            $pet->save();
-        }
-
-
-    }
-
 
     public function checkPermission(Player $player)
     {
-        $rank = DataExtractor::getPlayerRank($player);
+        $conn = new DataExtractor($this);
+        $rank = $conn->getPlayerRank($player);
         $p = '';
 
-        if ($rank == "User") {
-            $p = "User";
+        if ($rank == "user") {
+            $p = "user";
         }
         if ($rank == "vip" or $rank == "vip+") {
             $p = "vip_user";
@@ -260,7 +147,6 @@ class Main extends PluginBase implements Listener
 
     public function onEnable()
     {
-        new SQLConnection\DatabaseConnection($this);
         $world = $this->getServer()->getDefaultLevel();
         $world->setTime(0);
         $world->stopTime();
@@ -300,92 +186,6 @@ class Main extends PluginBase implements Listener
         $configsaa->save();
         $this->getScheduler()->scheduleRepeatingTask(new Boss($this), 20);
         $this->getScheduler()->scheduleRepeatingTask(new Taska($this), 20);
-        $this->getScheduler()->scheduleRepeatingTask(new Helix($this), 20);
-        $this->getScheduler()->scheduleRepeatingTask(new NameTagUpdate($this), 20);
-        $this->getScheduler()->scheduleRepeatingTask(new Stand($this), 20);
-        $this->getScheduler()->scheduleRepeatingTask(new ShopUpdate($this), 20);
-        $this->spawnShop();
-    }
-
-    public function createShop1(Level $level, Vector3 $pos)
-    {
-        $compoundtag = Entity::createBaseNBT($pos);
-        $npcgame = Entity::createEntity("ShopEntity", $level, $compoundtag);
-        $npcgame->setScale(1.5);
-        $npcgame->setNametagVisible(true);
-        $npcgame->setNameTagAlwaysVisible(true);
-        $npcgame->spawnToAll();
-    }
-
-    public function createShop2(Level $level, Vector3 $pos)
-    {
-        $compoundtag = Entity::createBaseNBT($pos);
-        $npcgame = Entity::createEntity("ShopEntity1", $level, $compoundtag);
-        $npcgame->setScale(1.5);
-        $npcgame->setNametagVisible(true);
-        $npcgame->setNameTagAlwaysVisible(true);
-        $npcgame->spawnToAll();
-    }
-
-    public function createShop3(Level $level, Vector3 $pos)
-    {
-        $compoundtag = Entity::createBaseNBT($pos);
-        $npcgame = Entity::createEntity("ShopEntity2", $level, $compoundtag);
-        $npcgame->setScale(1.5);
-        $npcgame->setNametagVisible(true);
-        $npcgame->setNameTagAlwaysVisible(true);
-        $npcgame->spawnToAll();
-
-
-    }
-
-    public function createShop4(Level $level, Vector3 $pos)
-    {
-        $compoundtag = Entity::createBaseNBT($pos);
-        $npcgame = Entity::createEntity("ShopEntity3", $level, $compoundtag);
-        $npcgame->setScale(1.5);
-        $npcgame->setNametagVisible(true);
-        $npcgame->setNameTagAlwaysVisible(true);
-        $npcgame->spawnToAll();
-    }
-
-    public function spawnShop()
-    {
-        $shop = new Config($this->getDataFolder() . "/shop.yml", Config::YAML);
-        $r = $shop->get("shop1");
-        $s = $shop->get("shop2");
-        $a = $shop->get("shop3");
-        $b = $shop->get("shop4");
-
-        if (!$r == 0 or !$s == 0 or !$a == 0 or !$b == 0) {
-
-            $this->createShop1($this->getServer()->getLevelByName($shop->get('level')), new Vector3($r[0], $r[1], $r[2]));
-            $this->createShop2($this->getServer()->getLevelByName($shop->get('level')), new Vector3($s[0], $s[1], $s[2]));
-            $this->createShop3($this->getServer()->getLevelByName($shop->get('level')), new Vector3($a[0], $a[1], $a[2]));
-            $this->createShop4($this->getServer()->getLevelByName($shop->get('level')), new Vector3($b[0], $b[1], $b[2]));
-            $this->getServer()->getLogger()->info(CoreUtils::PREFIX . " SHops Creadas");
-        }
-
-    }
-
-
-    public function setDefaultShop(Player $player)
-    {
-        $shop = new Config($this->getDataFolder() . "/shop.yml", Config::YAML);
-        if ($shop->get($player->getName()) == null) {
-
-            $shop->set($player->getName(), [
-                'cosmetic1' => "locket",
-                'cosmetic2' => "locket",
-                'cosmetic3' => "locket",
-                'cosmetic4' => "locket",
-            ]);
-            $shop->save();
-
-
-        }
-
-
     }
 
 
@@ -402,25 +202,26 @@ class Main extends PluginBase implements Listener
     }
 
 
-
     /**
      * @param string $name
      * @return int
      */
     public function verifyUserInDB(string $name)
     {
-        $conn = DatabaseConnection::$connection;
-        $query = mysqli_query($conn, "SELECT * FROM ServerAccounts WHERE NAME='" . $name . "'");
+        $conn = new DatabaseConnection($this);
+        $query = mysqli_query($conn->connection, "SELECT * FROM ServerAccounts WHERE NAME='" . $name . "'");
         if (!$query) {
-            die('Error: ' . mysqli_error($conn));
+            mysqli_close($conn->connection);
+            die('Error: ' . mysqli_error($conn->connection));
         }
         if (mysqli_num_rows($query) > 0) {
+            mysqli_close($conn->connection);
             return 1;
         } else {
+            mysqli_close($conn->connection);
             return 0;
         }
     }
-
 
 
     /**
@@ -452,45 +253,6 @@ class Main extends PluginBase implements Listener
     }
 
 
-    public function dataPet(Player $player)
-    {
-        $datos = array(
-
-            "type" => "form",
-            "title" => "§l§6Cosmetics",
-            "content" => "",
-            "buttons" => array()
-
-        );
-
-        if ($this->checkPermission($player) == "User") {
-            $datos["buttons"][] = array("text" => "§cNo tienes cosmeticos Disponibles\n§eCompra Rank para liberar");
-        }
-
-        if ($this->checkPermission($player) == "vip_user") {
-            $name = array("§l§eStand Creeper\n§r§5Type§7: §aPet", "§l§eHelix\n§r§5Type§7: §aParticle", "§l§eMini Me\n§r§5Type§7: §aPet", "§l§eSpider\n§r§5Type§7: §aMorph", "§l§eWitch\n§r§5Type§7: §aMorph");
-            $datos["buttons"][] = array("text" => $name[0]);
-            $datos["buttons"][] = array("text" => $name[1]);
-            $datos["buttons"][] = array("text" => $name[2]);
-            $datos["buttons"][] = array("text" => $name[3]);
-            $datos["buttons"][] = array("text" => $name[4]);
-        }
-        if ($this->checkPermission($player) == "bedrock") {
-            $name = array("§l§eStand Creeper\n§r§5Type§7: §aPet", "§l§eHelix\n§r§5Type§7: §aParticle", "§l§eMini Me\n§r§5Type§7: §aPet", "§l§eSpider\n§r§5Type§7: §aMorph", "§l§eWitch\n§r§5Type§7: §aMorph");
-            $datos["buttons"][] = array("text" => $name[0]);
-            $datos["buttons"][] = array("text" => $name[1]);
-            $datos["buttons"][] = array("text" => $name[2]);
-            $datos["buttons"][] = array("text" => $name[3]);
-            $datos["buttons"][] = array("text" => $name[4]);
-        }
-        if ($this->checkPermission($player) == "ore_user") {
-            $name = array("§l§eStand Creeper\n§r§5Type§7: §aPet", "§l§eHelix\n§r§5Type§7: §aParticle", "§l§eMini Me\n§r§5Type§7: §aPet", "§l§eSpider\n§r§5Type§7: §aMorph", "§l§eWitch\n§r§5Type§7: §aMorph");
-            $datos["buttons"][] = array("text" => $name[1]);
-        }
-        return $datos;
-    }
-
-
     public function sendFormGames()
     {
         $datos = array(
@@ -519,7 +281,7 @@ class Main extends PluginBase implements Listener
 
         );
         for ($i = 0; $i < 3; $i++) {
-            $name = array("§cCerrar menu","§cDesactivar particulas","§k§aiii§r§l§6Helix§r§k§aiii§r\n§eCrea una helice de fuego!");
+            $name = array("§cCerrar menu", "§cDesactivar particulas", "§k§aiii§r§l§6Helix§r§k§aiii§r\n§eCrea una helice de fuego!");
             $datos["buttons"][] = array("text" => $name[$i]);
         }
         return $datos;
@@ -530,103 +292,23 @@ class Main extends PluginBase implements Listener
         if ($player instanceof Player) {
             $accion = function ($pl, $data) {
                 if ($data !== null) {
-                    $par = new Config($this->getDataFolder() . "/mor.yml", Config::YAML);
-                    $pet = new Config($this->getDataFolder() . "/pet.yml", Config::YAML);
                     $name = array("§k§aiii§r§l§6SkyWars§r§k§aiii§r\n§eCombate en islas flotantes!", "§k§aiii§r§l§6FFA§r§k§aiii§r\n§eTodos vs Todos!", "§k§aiii§r§l§6TheBridge§r§k§aiii§r\n§eCuantos puntos lograras hacer?", "§k§aiii§r§l§61vs1§r§k§aiii§r\n§eResuelve disputas!", "§k§aiii§r§l§6EggWars§r§k§aiii§r\n§eMuy pronto");
                     if ($pl instanceof Player) {
                         switch ($name[$data]) {
                             case $name[0]:
                                 //$pl->teleport(new Vector3(140, 19, 116)); action
-                                foreach ($this->getServer()->getLevels() as $level) {
-                                    foreach ($level->getEntities() as $entity) {
-                                        if ($entity->getTargetEntity() == $pl) {
-                                            $entity->close();
-                                            $pl->removeAllEffects();
-                                            if (!$par->get($pl->getName()) == null) {
-                                                if (!$pet->get($pl->getName()) == null) {
-                                                    $par->set($pl->getName(), "ds");
-                                                    $pet->set($pl->getName(), "ds");
-                                                    $par->save();
-                                                    $pet->save();
-
-
-                                                }
-                                            }
-
-                                        }
-                                    }
-                                }
                                 break;
                             case $name[1]:
-                               // $pl->teleport(new Vector3(142, 19, 122)); action
-                                foreach ($this->getServer()->getLevels() as $level) {
-                                    foreach ($level->getEntities() as $entity) {
-                                        if ($entity->getTargetEntity() == $pl) {
-                                            $entity->close();
-                                            $pl->removeAllEffects();
-                                            if (!$par->get($pl->getName()) == null) {
-                                                if (!$pet->get($pl->getName()) == null) {
-                                                    $par->set($pl->getName(), "ds");
-                                                    $pet->set($pl->getName(), "ds");
-                                                    $par->save();
-                                                    $pet->save();
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                                // $pl->teleport(new Vector3(142, 19, 122)); action
                                 break;
                             case $name[2]:
-                               // $pl->teleport(new Vector3(140, 19, 135)); action
-                                foreach ($this->getServer()->getLevels() as $level) {
-                                    foreach ($level->getEntities() as $entity) {
-                                        if ($entity->getTargetEntity() == $pl) {
-                                            $entity->close();
-                                            $pl->removeAllEffects();
-
-                                        }
-                                    }
-                                }
+                                // $pl->teleport(new Vector3(140, 19, 135)); action
                                 break;
                             case $name[3]:
-                              //  $pl->teleport(new Vector3(138, 19, 140)); action
-                                foreach ($this->getServer()->getLevels() as $level) {
-                                    foreach ($level->getEntities() as $entity) {
-                                        if ($entity->getTargetEntity() == $pl) {
-                                            $entity->close();
-                                            $pl->removeAllEffects();
-                                            if (!$par->get($pl->getName()) == null) {
-                                                if (!$pet->get($pl->getName()) == null) {
-                                                    $par->set($pl->getName(), "ds");
-                                                    $pet->set($pl->getName(), "ds");
-                                                    $par->save();
-                                                    $pet->save();
-
-
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                                //  $pl->teleport(new Vector3(138, 19, 140)); action
                                 break;
                             case $name[4]:
-                           //     $pl->teleport(new Vector3(124, 19, 129)); action
-                                foreach ($this->getServer()->getLevels() as $level) {
-                                    foreach ($level->getEntities() as $entity) {
-                                        if ($entity->getTargetEntity() == $pl) {
-                                            $entity->close();
-                                            $pl->removeAllEffects();
-                                            if (!$par->get($pl->getName()) == null) {
-                                                if (!$pet->get($pl->getName()) == null) {
-                                                    $par->set($pl->getName(), "ds");
-                                                    $pet->set($pl->getName(), "ds");
-                                                    $par->save();
-                                                    $pet->save();
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                                //     $pl->teleport(new Vector3(124, 19, 129)); action
                                 break;
                         }
                     }
@@ -636,15 +318,14 @@ class Main extends PluginBase implements Listener
         }
     }
 
-    public function ParticlesForm(Player $player) {
+    public function ParticlesForm(Player $player)
+    {
         if ($player instanceof Player) {
             $accion = function ($pl, $data) {
                 $config = new Config($this->getDataFolder() . "/particle.yml", Config::YAML);
                 if ($data != null) {
-                    $name = array("§cCerrar menu","§cDesactivar particulas","§k§aiii§r§l§6Helix§r§k§aiii§r\n§eCrea una helice de fuego!");
-                    $rank = DataExtractor::getPlayerRank($pl);
-                    $ranks = ["diamond", "gold", "emerald", "vip", "vip+", "youtuber", "bedrock"];
-                    if ($pl instanceof Player){
+                    $name = array("§cCerrar menu", "§cDesactivar particulas", "§k§aiii§r§l§6Helix§r§k§aiii§r\n§eCrea una helice de fuego!");
+                    if ($pl instanceof Player) {
                         switch ($name[$data]) {
                             case $name[0]:
                                 return;
@@ -654,7 +335,7 @@ class Main extends PluginBase implements Listener
                                 $config->save();
                                 break;
                             case $name[2]:
-                                if (isset($rank, $ranks)) {
+                                if ($pl->hasPermission("code.cmd.particles.helix")) {
                                     $config->set($pl->getName(), "ac");
                                     $config->save();
                                     $pl->sendMessage(CoreUtils::PREFIX . "§aParticula Helix activada con exito!");
@@ -671,7 +352,6 @@ class Main extends PluginBase implements Listener
     }
 
 
-
     public function onDisable()
     {
         $this->removePets();
@@ -686,7 +366,6 @@ class Taska extends Task
     public function __construct(Main $plugin)
     {
         $this->plugin = $plugin;
-
     }
 
     public function onRun(int $tick)
@@ -697,10 +376,7 @@ class Taska extends Task
             foreach ($players as $pl) {
                 $pl->setFood(20);
                 $pl->setHealth(20);
-                $deaths = DataExtractor::getPlayerDeaths($pl);
-                $kills = DataExtractor::getPlayerKills($pl);
-                $money = DataExtractor::getPlayerMoney($pl);
-                $pl->sendTip("§f{TheCod§4ê§f}§7 Beta Edition | " . "§cPlayers online:§6 " . count(Server::getInstance()->getOnlinePlayers()) . "\n            §2Kills: §e" . $kills . " §2Deaths: §e" . $deaths . " §2Money: §e" . $money);
+                $pl->sendTip("§f{TheCod§4ê§f}§7 Beta Edition | " . "§cPlayers online:§6 " . count(Server::getInstance()->getOnlinePlayers()));
             }
         }
     }

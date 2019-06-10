@@ -29,9 +29,10 @@ class TopsCommand extends Command implements PluginIdentifiableCommand
 
     public function execute(CommandSender $sender, string $commandLabel, array $args)
     {
+        $conn = new DataExtractor($this->main);
         if ($sender instanceof Player) {
             $sender->sendMessage('§4××××××§cTop Kills§4××××××');
-            DataExtractor::getTopKills($sender->getPlayer());
+            $conn->getTopKills($sender->getPlayer());
         } else {
             $sender->sendMessage(CoreUtils::USE_IN_GAME);
         }

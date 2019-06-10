@@ -29,14 +29,15 @@ class StatsCommand extends Command implements PluginIdentifiableCommand
 
     public function execute(CommandSender $sender, string $commandLabel, array $args)
     {
+        $conn = new DataExtractor($this->main);
         if ($sender instanceof Player){
             $sender->sendMessage('§b××××§aYour Stats§b××××' . "\n" .
                                  '§2Jugador: ' . '§c' . $sender->getName() . "\n" .
-                                 '§9Rango: ' . '§6' . DataExtractor::getPlayerRank($sender->getPlayer()) . "\n" .
-                                 '§9Kills: ' . '§6' . DataExtractor::getPlayerKills($sender->getPlayer()) . "\n" .
-                                 '§9Deaths: ' . '§6' . DataExtractor::getPlayerDeaths($sender->getPlayer()) . "\n" .
-                                 '§9Money: ' . '§6' . DataExtractor::getPlayerMoney($sender->getPlayer()) . "\n" .
-                                 '§9KDR: ' . '§6' . DataExtractor::getPlayerKDR($sender->getPlayer()) . "\n" .
+                                 '§9Rango: ' . '§6' . $conn->getPlayerRank($sender->getPlayer()) . "\n" .
+                                 '§9Kills: ' . '§6' . $conn->getPlayerKills($sender->getPlayer()) . "\n" .
+                                 '§9Deaths: ' . '§6' . $conn->getPlayerDeaths($sender->getPlayer()) . "\n" .
+                                 '§9Money: ' . '§6' . $conn->getPlayerMoney($sender->getPlayer()) . "\n" .
+                                 '§9KDR: ' . '§6' . $conn->getPlayerKDR($sender->getPlayer()) . "\n" .
                                  '§b××××××××××××××××');
         } else {
             $sender->sendMessage(CoreUtils::USE_IN_GAME);

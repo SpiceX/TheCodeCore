@@ -23,29 +23,35 @@ class DatabaseEventHandler implements Listener
     }
 
     public function addDeath(PlayerDeathEvent $deathEvent) {
+        $conn = new DataExtractor($this->main);
         $player = $deathEvent->getPlayer();
         $name = $player->getName();
-        $crescent = DataExtractor::getPlayerDeaths($player);
+        $crescent = $conn->getPlayerDeaths($player);
         $total = $crescent + 1;
         $query = "UPDATE ServerAccounts SET DEATHS = '".$total."' WHERE ServerAccounts.NAME = '".$name."'";
-        mysqli_query(DatabaseConnection::$connection, $query);
+        $db = new DatabaseConnection($this->main);
+        mysqli_query($db->connection, $query);
+        mysqli_close($db->connection);
     }
 
     public function addKill(EntityDeathEvent $deathEvent) {
+        $conn = new DataExtractor($this->main);
         $entity = $deathEvent->getEntity();
         $cause = $entity->getLastDamageCause();
         if ($cause instanceof EntityDamageByEntityEvent) {
             $killer = $cause->getDamager();
             if ($killer instanceof Player) {
                 $name = $killer->getName();
-                $crescent = DataExtractor::getPlayerKills($killer);
+                $crescent = $conn->getPlayerKills($killer);
                 $total = $crescent + 1;
-                $money = DataExtractor::getPlayerMoney($killer);
-                $total_money = DataExtractor::getPlayerKDR($killer) + 1 + $money;
+                $money = $conn->getPlayerMoney($killer);
+                $total_money = $conn->getPlayerKDR($killer) + 1 + $money;
                 $query = "UPDATE ServerAccounts SET KILLS = '".$total."' WHERE ServerAccounts.NAME = '".$name."'";
                 $query2 = "UPDATE ServerAccounts SET MONEY = '".$total_money."' WHERE ServerAccounts.NAME = '".$name."'";
-                mysqli_query(DatabaseConnection::$connection, $query);
-                mysqli_query(DatabaseConnection::$connection, $query2);
+                $db = new DatabaseConnection($this->main);
+                mysqli_query($db->connection, $query);
+                mysqli_query($db->connection, $query2);
+                mysqli_close($db->connection);
             }
         }
     }

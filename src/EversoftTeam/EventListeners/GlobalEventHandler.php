@@ -100,11 +100,12 @@ class GlobalEventHandler implements Listener
 
     public function onChat(PlayerChatEvent $event)
     {
+        $conn = new DataExtractor($this->main);
         $player = $event->getPlayer();
         $message = $event->getMessage();
-        $rank = DataExtractor::getPlayerRank($player);
+        $rank = $conn->getPlayerRank($player);
         $event->setFormat("§8> §7" . $player->getName() . " §8>> §7" . $message);
-        if ($rank != "User") {
+        if ($rank != "user") {
             if ($rank == "diamond") {
                 $event->setFormat("§7[§l§bDiamond§r§7]§r §b" . $player->getName() . " §8> §7" . $message);
             } elseif ($rank == "bedrock") {
@@ -269,11 +270,12 @@ class GlobalEventHandler implements Listener
 
     public function checkPermission(Player $player)
     {
-        $rank = DataExtractor::getPlayerRank($player);
+        $conn = new DataExtractor($this->main);
+        $rank = $conn->getPlayerRank($player);
         $p = '';
 
-        if ($rank == "User") {
-            $p = "User";
+        if ($rank == "user") {
+            $p = "user";
         }
         if ($rank == "vip" or $rank == "vip+") {
             $p = "vip_user";
@@ -295,6 +297,7 @@ class GlobalEventHandler implements Listener
         $pet = new Config($this->main->getDataFolder() . "/pet.yml", Config::YAML);
         $p = new Config($this->main->getDataFolder() . "/particle.yml", Config::YAML);
         $m = new Config($this->main->getDataFolder() . "/mor.yml", Config::YAML);
+        $conn = new DataExtractor($this->main);
         $player = $event->getPlayer();
         if ($this->main->verifyUserInDB($player->getName()) == 0) {
             $player->sendMessage(CoreUtils::REGISTER_MESSAGE);
@@ -326,11 +329,10 @@ class GlobalEventHandler implements Listener
                 $p->set($player->getName(), "ds");
                 $p->save();
             }
-            $this->main->setDefaultShop($player);
             $player->removeAllEffects();
             $event->setJoinMessage("");
             $player->sendMessage(CoreUtils::AUTHENTICATE_MESSAGE);
-            $rank = DataExtractor::getPlayerRank($player);
+            $rank = $conn->getPlayerRank($player);
             if ($rank == "vip") {
                 $player->setNameTag("§7§kii§r§bVIP§6+§7§kii§r §c" . $player->getName());
                 $player->setAllowFlight(false);
@@ -362,7 +364,7 @@ class GlobalEventHandler implements Listener
         $player = $chatEvent->getPlayer();
         $args = explode(" ", $chatEvent->getMessage());
         $password = $args[0];
-        $rank = "User";
+        $rank = "user";
         $money = 0;
         $kills = 0;
         $deaths = 1;
@@ -385,9 +387,9 @@ class GlobalEventHandler implements Listener
                     $player->sendMessage(CoreUtils::PREFIX . "§aDatos obtenidos con exito!");
                     $getFace = new PlayerFaceAPI($this->main);
                     $getFace->sendHead($name, $player->getSkin()->getSkinData());
-                    $sqli = DatabaseConnection::$connection;
-                    $query = "INSERT INTO ServerAccounts (ID,NAME,PASSWORD,RANK,MONEY,KILLS,DEATHS,UUID) VALUES (?,?,?,?,?,?,?,?)";
-                    if ($stmt = $sqli->prepare($query)) {
+                    $sqli = new DatabaseConnection($this->main);
+                    $query = "INSERT INTO ServerAccounts (ID,NAME,PASSWORD,`RANK`,MONEY,KILLS,DEATHS,UUID) VALUES (?,?,?,?,?,?,?,?)";
+                    if ($stmt = $sqli->connection->prepare($query)) {
                         $stmt->bind_param("isssiiis", $idn, $name, $password, $rank, $money, $kills, $deaths, $uuid);
                         $stmt->execute();
                     }

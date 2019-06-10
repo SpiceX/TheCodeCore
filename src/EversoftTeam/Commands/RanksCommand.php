@@ -19,6 +19,7 @@ class RanksCommand extends Command implements PluginIdentifiableCommand
 
     /**
      * RanksCommand constructor.
+     * @param Main $main
      */
     public function __construct(Main $main)
     {
@@ -28,6 +29,7 @@ class RanksCommand extends Command implements PluginIdentifiableCommand
 
     public function execute(CommandSender $sender, string $commandLabel, array $args)
     {
+        $conn = new DataExtractor($this->main);
         if ($sender instanceof Player) {
             if ($sender->isOp()) {
                 if (!empty($args[0])) {
@@ -42,31 +44,31 @@ class RanksCommand extends Command implements PluginIdentifiableCommand
                             if (!empty($args[1])) {
                                 if (!empty($args[2])) {
                                     if ($args[2] == "emerald") {
-                                        DataExtractor::setPlayerRank($args[1], $args[2]);
+                                        $conn->setPlayerRank($args[1], $args[2]);
                                         $sender->sendMessage(CoreUtils::PREFIX . "§7Has dado el rango " . $args[2] . " a el jugador " . $args[1]);
                                     } elseif ($args[2] == "diamond") {
-                                        DataExtractor::setPlayerRank($args[1], $args[2]);
+                                        $conn->setPlayerRank($args[1], $args[2]);
                                         $sender->sendMessage(CoreUtils::PREFIX . "§7Has dado el rango " . $args[2] . " a el jugador " . $args[1]);
                                     } elseif ($args[2] == "gold") {
-                                        DataExtractor::setPlayerRank($args[1], $args[2]);
+                                        $conn->setPlayerRank($args[1], $args[2]);
                                         $sender->sendMessage(CoreUtils::PREFIX . "§7Has dado el rango " . $args[2] . " a el jugador " . $args[1]);
                                     } elseif ($args[2] == "youtuber") {
-                                        DataExtractor::setPlayerRank($args[1], $args[2]);
+                                        $conn->setPlayerRank($args[1], $args[2]);
                                         $sender->sendMessage(CoreUtils::PREFIX . "§7Has dado el rango " . $args[2] . " a el jugador " . $args[1]);
                                     } elseif ($args[2] == "bedrock") {
-                                        DataExtractor::setPlayerRank($args[1], $args[2]);
+                                        $conn->setPlayerRank($args[1], $args[2]);
                                         $sender->sendMessage(CoreUtils::PREFIX . "§7Has dado el rango " . $args[2] . " a el jugador " . $args[1]);
                                     } elseif ($args[2] == "vip") {
-                                        DataExtractor::setPlayerRank($args[1], $args[2]);
+                                        $conn->setPlayerRank($args[1], $args[2]);
                                         $sender->sendMessage(CoreUtils::PREFIX . "§7Has dado el rango " . $args[2] . " a el jugador " . $args[1]);
                                     } elseif ($args[2] == "vip+") {
-                                        DataExtractor::setPlayerRank($args[1], $args[2]);
+                                        $conn->setPlayerRank($args[1], $args[2]);
                                         $sender->sendMessage(CoreUtils::PREFIX . "§7Has dado el rango " . $args[2] . " a el jugador " . $args[1]);
                                     } elseif ($args[2] == "user") {
-                                        DataExtractor::setPlayerRank($args[1], $args[2]);
+                                        $conn->setPlayerRank($args[1], $args[2]);
                                         $sender->sendMessage(CoreUtils::PREFIX . "§7Has dado el rango " . $args[2] . " a el jugador " . $args[1]);
                                     } elseif ($args[2] == "helper") {
-                                        DataExtractor::setPlayerRank($args[1], $args[2]);
+                                        $conn->setPlayerRank($args[1], $args[2]);
                                         $sender->sendMessage(CoreUtils::PREFIX . "§7Has dado el rango " . $args[2] . " a el jugador " . $args[1]);
                                     } else {
                                         $sender->sendMessage(CoreUtils::RANK_HELP);
@@ -88,7 +90,7 @@ class RanksCommand extends Command implements PluginIdentifiableCommand
 
     public function getPlugin(): Plugin
     {
-        // TODO: Implement getPlugin() method.
+        return $this->main;
     }
 
 
